@@ -1,104 +1,133 @@
-# MS SharePoint & OneDrive Gallery
+# Cloud Gallery Connector for Microsoft 365
 
-This repository contains **MS SharePoint & OneDrive Gallery**, a WordPress plugin by Devolution that connects WordPress to Microsoft 365 through Microsoft Graph. It lets administrators browse OneDrive or SharePoint document libraries and display a selected folder through a shortcode.
+This repository contains the source code and installable ZIP package for the **Cloud Gallery Connector for Microsoft 365** WordPress plugin.
 
-## Repository structure
+## Directory structure
 
 ```text
 Plugin Development By Devolution/
 |-- README.md
-|-- MS sharepoint gallery.zip
-`-- MS sharepoint gallery/
+`-- Cloud Gallery Connector for Microsoft 365/
     |-- assets/
     |   |-- admin.css
     |   |-- admin.js
-    |   `-- gallery.css
+    |   |-- browser.css
+    |   |-- browser.js
+    |   |-- gallery.css
+    |   |-- lightbox.css
+    |   `-- lightbox.js
     |-- includes/
     |   |-- class-msog-admin.php
     |   |-- class-msog-graph.php
     |   `-- class-msog-shortcode.php
+    |-- cloud-gallery-connector-for-microsoft-365-1.3.1.zip
     |-- ms-sharepoint-onedrive-gallery.php
-    |-- ms-sharepoint-onedrive-gallery-1.0.0.zip
     |-- readme.txt
     `-- uninstall.php
 ```
 
-## File and folder guide
+> The hidden `.git/` directory contains Git repository metadata and is intentionally omitted from the project tree.
 
-| Path | Purpose |
+## Directory contents
+
+### `Cloud Gallery Connector for Microsoft 365/`
+
+The WordPress plugin's source and release directory.
+
+### `assets/`
+
+Front-end and WordPress administration assets.
+
+| File | Purpose |
 | --- | --- |
-| `MS sharepoint gallery/` | WordPress plugin source directory. |
-| `assets/admin.css` | Styles for the Microsoft Gallery administration screen. |
-| `assets/admin.js` | Admin-side interactions, including copy-to-clipboard controls. |
-| `assets/gallery.css` | Front-end gallery and list presentation styles. |
-| `includes/class-msog-admin.php` | Admin menu, plugin settings, OAuth connection flow, SharePoint/OneDrive browser, and shortcode generator. |
-| `includes/class-msog-graph.php` | Microsoft Graph requests, OAuth token handling, caching, pagination, and refresh-token storage. |
-| `includes/class-msog-shortcode.php` | Registers and renders the `[msog_gallery]` shortcode. |
-| `ms-sharepoint-onedrive-gallery.php` | Main plugin bootstrap file and activation defaults. |
-| `readme.txt` | WordPress-style plugin metadata and installation instructions. |
-| `uninstall.php` | Removes the plugin settings and stored refresh token during uninstall. |
-| `ms-sharepoint-onedrive-gallery-1.0.0.zip` | Versioned installable plugin package. |
-| `MS sharepoint gallery.zip` | Repository-level packaged copy of the plugin. |
+| `admin.css` | Styles the plugin's WordPress administration page. |
+| `admin.js` | Provides administration-page interactions. |
+| `browser.css` | Styles the interactive folder browser. |
+| `browser.js` | Handles interactive folder navigation. |
+| `gallery.css` | Styles gallery and file-list layouts. |
+| `lightbox.css` | Styles the accessible image lightbox. |
+| `lightbox.js` | Provides image lightbox behavior. |
 
-## Requirements
+### `includes/`
 
-- WordPress 6.0 or newer
-- PHP 7.4 or newer
-- A Microsoft 365 account
-- A Microsoft Entra app registration
-- Delegated Microsoft Graph permissions:
-  - `User.Read`
-  - `Files.Read.All`
-  - `Sites.Read.All`
+The plugin's PHP classes.
+
+| File | Purpose |
+| --- | --- |
+| `class-msog-admin.php` | Manages settings, Microsoft authorization, admin navigation, and shortcode generation. |
+| `class-msog-graph.php` | Communicates with Microsoft Graph and handles tokens, caching, drives, folders, and files. |
+| `class-msog-shortcode.php` | Registers and renders the `[msog_gallery]` shortcode and its supported views. |
+
+### Root plugin files
+
+| File | Purpose |
+| --- | --- |
+| `ms-sharepoint-onedrive-gallery.php` | Main plugin bootstrap file. It loads the PHP classes, declares version `1.3.1`, and registers privacy-policy content. |
+| `readme.txt` | WordPress.org-compatible plugin documentation, metadata, FAQ, privacy details, and changelog. |
+| `uninstall.php` | Removes plugin settings and stored authorization data when the plugin is uninstalled. |
+| `cloud-gallery-connector-for-microsoft-365-1.3.1.zip` | Installable release package for version `1.3.1`. |
+
+## Plugin details
+
+- **Name:** Cloud Gallery Connector for Microsoft 365
+- **Version:** 1.3.1
+- **Author:** Devolution
+- **Requires WordPress:** 6.0 or newer
+- **Tested up to:** WordPress 7.1
+- **Requires PHP:** 7.4 or newer
+- **License:** GPL-2.0-or-later
+
+## Features
+
+- Connects WordPress to Microsoft 365 through Microsoft Graph.
+- Browses OneDrive and SharePoint document-library folders.
+- Displays content as a responsive gallery, file list, or interactive folder browser.
+- Includes an accessible image lightbox.
+- Generates folder-specific WordPress shortcodes.
+- Supports cached Graph responses and encrypted refresh-token storage.
 
 ## Installation
 
-1. In WordPress, open **Plugins > Add New > Upload Plugin**.
-2. Upload `ms-sharepoint-onedrive-gallery-1.0.0.zip` and activate it.
-3. Open **Microsoft Gallery** in the WordPress admin menu.
-4. Create an app registration in Microsoft Entra admin center.
-5. Add the Web redirect URI displayed on the plugin settings page.
-6. Add the delegated Microsoft Graph permissions listed above.
-7. Create a client secret and save the Client ID, client secret, and tenant in WordPress.
-8. Select **Sign in with Microsoft** to connect the account.
-9. Browse to a OneDrive or SharePoint folder and copy its generated shortcode.
+1. In WordPress, go to **Plugins > Add New > Upload Plugin**.
+2. Upload `cloud-gallery-connector-for-microsoft-365-1.3.1.zip`.
+3. Activate **Cloud Gallery Connector for Microsoft 365**.
+4. Open **Cloud Gallery** in the WordPress administration menu.
+5. Create an app registration in Microsoft Entra.
+6. Add the Web redirect URI displayed by the plugin.
+7. Add these delegated Microsoft Graph permissions:
+   - `User.Read`
+   - `Files.Read.All`
+   - `Sites.Read.All`
+8. Create a client secret and save the Client ID, client secret, and tenant in the plugin settings.
+9. Sign in with Microsoft, browse to a folder, and copy its shortcode.
 
-## Shortcode
+## Shortcode usage
+
+Gallery view:
 
 ```text
 [msog_gallery drive="DRIVE_ID" folder="FOLDER_ITEM_ID" view="gallery" columns="4"]
 ```
 
-### Options
-
-| Attribute | Accepted values | Default | Description |
-| --- | --- | --- | --- |
-| `drive` | Microsoft Graph drive ID | Required | Selects the OneDrive or SharePoint document library. |
-| `folder` | Microsoft Graph folder item ID or `root` | `root` | Selects the folder to display. |
-| `view` | `gallery`, `list` | `gallery` | Controls the front-end layout. |
-| `columns` | `1` to `6` | `4` | Sets the number of gallery columns. |
-| `limit` | `1` to `200` | `100` | Limits the number of displayed files. |
-| `images_only` | `yes`, `no` | `no` | Hides non-image files when enabled. |
-
-Example list view:
+Interactive folder browser:
 
 ```text
-[msog_gallery drive="DRIVE_ID" folder="root" view="list" limit="50"]
+[msog_gallery drive="DRIVE_ID" folder="FOLDER_ITEM_ID" view="folders" columns="4"]
 ```
 
-## Security and data handling
+Supported shortcode options:
 
-- OAuth requests use a time-limited state value to help prevent request forgery.
-- Administrative actions require the `manage_options` capability.
-- The Microsoft refresh token is stored using AES-256-CBC encryption when OpenSSL is available.
-- Access tokens and Graph responses are cached with WordPress transients.
-- Files remain in Microsoft 365; generated links open on Microsoft and remain subject to the configured Microsoft sharing and access rules.
-- Uninstalling the plugin deletes its saved settings and refresh token.
+| Attribute | Values |
+| --- | --- |
+| `drive` | Microsoft Graph drive ID |
+| `folder` | Folder item ID |
+| `view` | `gallery`, `list`, or `folders` |
+| `columns` | `1` through `6` |
+| `limit` | `1` through `200` |
+| `images_only` | `yes` or `no` |
 
-## Version
+## External service
 
-Current plugin version: **1.0.0**
+The plugin uses Microsoft's identity platform and Microsoft Graph after a WordPress administrator configures Microsoft app credentials and authorizes an account. Files remain stored in Microsoft 365; the plugin retrieves file and folder metadata, thumbnails, links, and short-lived download URLs required to display the selected content.
 
-## License
-
-GPL-2.0-or-later
+This project is independent and is not affiliated with, endorsed by, or sponsored by Microsoft.
