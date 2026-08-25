@@ -80,7 +80,15 @@ class MSOG_Graph {
         if ($cache && ($hit = get_transient($key)) !== false) return $hit;
         $token = self::access_token();
         if (is_wp_error($token)) return $token;
-        $url = (strpos($path, 'http') === 0 ? $path : self::GRAPH . '/' . ltrim($path, '/'));
+        if (strpos($path, 'http') === 0) {
+            $parts = wp_parse_url($path);
+            if (empty($parts['host']) || strtolower($parts['host']) !== 'graph.microsoft.com' || strtolower($parts['scheme'] ?? '') !== 'https') {
+                return new WP_Error('msog_invalid_graph_url', __('Microsoft Graph returned an invalid pagination URL.', 'ms-sharepoint-onedrive-gallery'));
+            }
+            $url = $path;
+        } else {
+            $url = self::GRAPH . '/' . ltrim($path, '/');
+        }
         if ($query) $url = add_query_arg($query, $url);
         $res = wp_remote_get($url, array('timeout' => 25, 'headers' => array('Authorization' => 'Bearer ' . $token, 'Accept' => 'application/json')));
         if (is_wp_error($res)) return $res;

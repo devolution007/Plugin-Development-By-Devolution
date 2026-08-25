@@ -22,11 +22,12 @@ class MSOG_Shortcode {
             wp_enqueue_script('msog-browser', MSOG_URL . 'assets/browser.js', array(), MSOG_VERSION, true);
             wp_localize_script('msog-browser', 'MSOG_BROWSER', array(
                 'ajaxUrl' => admin_url('admin-ajax.php'),
+                'nonce' => wp_create_nonce('msog_browse_folder'),
                 'loading' => __('Loading folder…', 'ms-sharepoint-onedrive-gallery'),
                 'error' => __('The folder could not be loaded.', 'ms-sharepoint-onedrive-gallery'),
             ));
             $payload = self::browser_payload($data['value'] ?? array(), sanitize_text_field($a['drive']));
-            return '<div class="msog-browser" data-drive="' . esc_attr($a['drive']) . '" data-folder="' . esc_attr($a['folder']) . '" data-token="' . esc_attr(self::sign($a['drive'], $a['folder'])) . '"><div class="msog-browser-nav" hidden><button type="button" class="msog-back">&larr; ' . esc_html__('Back', 'ms-sharepoint-onedrive-gallery') . '</button><span class="msog-browser-path"></span></div><div class="msog-browser-status" role="status" aria-live="polite"></div><div class="msog-gallery msog-view-folders" style="--msog-columns:' . esc_attr($columns) . '">' . self::browser_items_html($payload) . '</div></div>';
+            return '<div class="msog-browser" data-drive="' . esc_attr($a['drive']) . '" data-folder="' . esc_attr($a['folder']) . '" data-token="' . esc_attr(self::sign($a['drive'], $a['folder'])) . '"><div class="msog-browser-nav" hidden><button type="button" class="msog-back">&larr; ' . esc_html__('Back', 'ms-sharepoint-onedrive-gallery') . '</button><span class="msog-browser-path"></span></div><div class="msog-browser-status" role="status" aria-live="polite"></div><div class="msog-gallery msog-view-folders" style="--msog-columns:' . esc_attr($columns) . '">' . wp_kses(self::browser_items_html($payload), self::browser_allowed_html()) . '</div></div>';
         }
         $items = array_slice($data['value'] ?? array(), 0, $limit); $images_only = strtolower($a['images_only']) === 'yes';
         ob_start(); echo '<div class="msog-gallery msog-view-' . esc_attr($view) . '" style="--msog-columns:' . esc_attr($columns) . '">';
@@ -36,17 +37,16 @@ class MSOG_Shortcode {
             $mime = $item['file']['mimeType'] ?? ''; $is_image = strpos($mime, 'image/') === 0;
             if ($images_only && !$is_image) continue;
             $thumb = $item['thumbnails'][0]['large']['url'] ?? ($item['thumbnails'][0]['medium']['url'] ?? '');
-            $url = esc_url($item['webUrl'] ?? '#'); $name = esc_html($item['name'] ?? '');
             $full = $item['@microsoft.graph.downloadUrl'] ?? $thumb;
-            echo '<article class="msog-item ' . ($is_image ? 'is-image' : 'is-file') . '"><a href="' . ($is_image ? esc_url($full) : $url) . '" ' . ($is_image ? 'class="msog-lightbox-link" data-full="' . esc_url($full) . '" data-name="' . esc_attr($item['name']) . '"' : 'target="_blank" rel="noopener noreferrer"') . '>';
+            echo '<article class="msog-item ' . esc_attr($is_image ? 'is-image' : 'is-file') . '"><a href="' . esc_url($is_image ? $full : ($item['webUrl'] ?? '#')) . '" ' . ($is_image ? 'class="msog-lightbox-link" data-full="' . esc_url($full) . '" data-name="' . esc_attr($item['name']) . '"' : 'target="_blank" rel="noopener noreferrer"') . '>';
             if ($view === 'gallery') { echo '<span class="msog-preview">'; if ($thumb) echo '<img src="' . esc_url($thumb) . '" alt="' . esc_attr($item['name']) . '" loading="lazy">'; else echo '<span class="msog-file-icon" aria-hidden="true">' . esc_html(strtoupper(pathinfo($item['name'], PATHINFO_EXTENSION) ?: 'FILE')) . '</span>'; echo '</span>'; }
-            echo '<span class="msog-name">' . $name . '</span>';
+            echo '<span class="msog-name">' . esc_html($item['name'] ?? '') . '</span>';
             if ($view === 'list') echo '<span class="msog-meta">' . esc_html(self::size((int) ($item['size'] ?? 0))) . '</span>';
             echo '</a></article>';
             $rendered++;
         }
         echo '</div>';
-        if (!$rendered) echo self::error(__('This folder contains no displayable files. Files inside subfolders are not shown automatically.', 'ms-sharepoint-onedrive-gallery'));
+        if (!$rendered) echo wp_kses_post(self::error(__('This folder contains no displayable files. Files inside subfolders are not shown automatically.', 'ms-sharepoint-onedrive-gallery')));
         return ob_get_clean();
     }
     private static function size($bytes) { return size_format($bytes, 1); }
@@ -87,7 +87,17 @@ class MSOG_Shortcode {
         }
         return $html;
     }
+    private static function browser_allowed_html() {
+        return array(
+            'div' => array('class'=>true), 'article' => array('class'=>true),
+            'button' => array('type'=>true,'class'=>true,'data-folder'=>true,'data-token'=>true,'data-name'=>true),
+            'span' => array('class'=>true,'aria-hidden'=>true),
+            'a' => array('href'=>true,'class'=>true,'data-full'=>true,'data-name'=>true,'target'=>true,'rel'=>true),
+            'img' => array('src'=>true,'alt'=>true,'loading'=>true),
+        );
+    }
     public static function ajax_browse() {
+        check_ajax_referer('msog_browse_folder');
         $drive = sanitize_text_field(wp_unslash($_POST['drive'] ?? ''));
         $folder = sanitize_text_field(wp_unslash($_POST['folder'] ?? ''));
         $token = sanitize_text_field(wp_unslash($_POST['token'] ?? ''));
@@ -96,6 +106,6 @@ class MSOG_Shortcode {
         }
         $data = MSOG_Graph::children($drive, $folder);
         if (is_wp_error($data)) wp_send_json_error(array('message' => $data->get_error_message()), 502);
-        wp_send_json_success(array('html' => self::browser_items_html(self::browser_payload($data['value'] ?? array(), $drive))));
+        wp_send_json_success(array('html' => wp_kses(self::browser_items_html(self::browser_payload($data['value'] ?? array(), $drive)), self::browser_allowed_html())));
     }
 }

@@ -8,7 +8,7 @@
     function load(folder, token, name, push) {
       if (push) history.push({ folder: browser.dataset.folder, token: browser.dataset.token, name: path.textContent || '' });
       browser.classList.add('is-loading'); status.textContent = MSOG_BROWSER.loading;
-      var body = new URLSearchParams({ action: 'msog_browse_folder', drive: browser.dataset.drive, folder: folder, token: token });
+      var body = new URLSearchParams({ action: 'msog_browse_folder', _ajax_nonce: MSOG_BROWSER.nonce, drive: browser.dataset.drive, folder: folder, token: token });
       fetch(MSOG_BROWSER.ajaxUrl, { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' }, body: body.toString() })
         .then(function (response) { return response.json(); })
         .then(function (result) {
