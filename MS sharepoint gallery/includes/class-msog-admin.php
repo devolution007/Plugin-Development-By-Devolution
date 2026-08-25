@@ -122,6 +122,7 @@ class MSOG_Admin {
                 if ($is_folder) { $sc = '[msog_gallery drive="' . esc_attr($drive) . '" folder="' . esc_attr($item['id']) . '" view="gallery" columns="4"]'; echo '<code>' . $sc . '</code> <button type="button" class="button button-small msog-copy-btn">Copy</button>'; }
                 echo '</td></tr>'; }
             echo '</tbody></table>'; }
+        echo '<p><strong>Folder browser:</strong> <code>[msog_gallery drive=&quot;' . esc_html($drive) . '&quot; folder=&quot;' . esc_html($folder) . '&quot; view=&quot;folders&quot; columns=&quot;4&quot;]</code></p>';
         echo '<p><strong>List layout:</strong> <code>[msog_gallery drive=&quot;' . esc_html($drive) . '&quot; folder=&quot;' . esc_html($folder) . '&quot; view=&quot;list&quot;]</code></p></div>';
     }
 }

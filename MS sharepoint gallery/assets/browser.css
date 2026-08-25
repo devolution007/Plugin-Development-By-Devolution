@@ -1,0 +1,9 @@
+.msog-view-folders{grid-template-columns:repeat(var(--msog-columns),minmax(0,1fr))}
+.msog-folder-card{align-items:center;background:#fff;border:1px solid #dfe3e8;border-radius:9px;color:inherit;cursor:pointer;display:flex;font:inherit;gap:12px;min-height:76px;padding:14px;text-align:left;transition:border-color .2s,box-shadow .2s;width:100%}
+.msog-folder-card:hover,.msog-folder-card:focus-visible{border-color:#2271b1;box-shadow:0 3px 12px rgba(0,0,0,.08);outline:none}
+.msog-folder-card .msog-name{flex:1;margin:0}.msog-folder-icon{background:#f2b705;border-radius:3px;display:block;height:30px;position:relative;width:40px}
+.msog-folder-icon:before{background:#f2b705;border-radius:3px 3px 0 0;content:"";height:8px;left:2px;position:absolute;top:-5px;width:18px}
+.msog-folder-open{color:#667085;font-size:28px}.msog-browser-nav{align-items:center;display:flex;gap:12px;margin-bottom:12px}.msog-browser-nav[hidden]{display:none}
+.msog-back{background:#fff;border:1px solid #ccd0d4;border-radius:5px;cursor:pointer;padding:7px 12px}.msog-browser-path{font-weight:600}.msog-browser-status{margin:8px 0}
+.msog-browser.is-loading .msog-view-folders{opacity:.5;pointer-events:none}.msog-browser-empty{grid-column:1/-1;padding:20px;text-align:center}
+@media(max-width:900px){.msog-view-folders{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:640px){.msog-view-folders{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:380px){.msog-view-folders{grid-template-columns:1fr}}
