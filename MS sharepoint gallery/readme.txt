@@ -3,7 +3,7 @@ Contributors: devolution
 Tags: onedrive, sharepoint, gallery, microsoft 365, shortcode
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 1.2.0
+Stable tag: 1.2.1
 License: GPLv2 or later
 
 Connect WordPress to Microsoft 365 and embed OneDrive or SharePoint folders.
