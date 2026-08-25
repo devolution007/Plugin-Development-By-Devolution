@@ -42,7 +42,7 @@ class MSOG_Graph {
         if (is_wp_error($res)) return $res;
         $json = json_decode(wp_remote_retrieve_body($res), true);
         if (wp_remote_retrieve_response_code($res) >= 300 || empty($json['access_token'])) {
-            return new WP_Error('msog_token', isset($json['error_description']) ? sanitize_text_field($json['error_description']) : __('Microsoft sign-in failed.', 'ms-sharepoint-onedrive-gallery'));
+            return new WP_Error('msog_token', isset($json['error_description']) ? sanitize_text_field($json['error_description']) : __('Microsoft sign-in failed.', 'cloud-gallery-connector-for-microsoft-365'));
         }
         return $json;
     }
@@ -61,9 +61,9 @@ class MSOG_Graph {
         $token = get_transient('msog_access_token');
         if ($token) return $token;
         $stored = get_option('msog_refresh_token');
-        if (!$stored) return new WP_Error('msog_not_connected', __('Microsoft account is not connected.', 'ms-sharepoint-onedrive-gallery'));
+        if (!$stored) return new WP_Error('msog_not_connected', __('Microsoft account is not connected.', 'cloud-gallery-connector-for-microsoft-365'));
         $refresh = self::decrypt($stored);
-        if (!$refresh) return new WP_Error('msog_token_invalid', __('Stored Microsoft login is invalid. Reconnect the account.', 'ms-sharepoint-onedrive-gallery'));
+        if (!$refresh) return new WP_Error('msog_token_invalid', __('Stored Microsoft login is invalid. Reconnect the account.', 'cloud-gallery-connector-for-microsoft-365'));
         $s = self::settings();
         $tokens = self::token_request(array(
             'client_id' => $s['client_id'], 'client_secret' => $s['client_secret'],
@@ -83,7 +83,7 @@ class MSOG_Graph {
         if (strpos($path, 'http') === 0) {
             $parts = wp_parse_url($path);
             if (empty($parts['host']) || strtolower($parts['host']) !== 'graph.microsoft.com' || strtolower($parts['scheme'] ?? '') !== 'https') {
-                return new WP_Error('msog_invalid_graph_url', __('Microsoft Graph returned an invalid pagination URL.', 'ms-sharepoint-onedrive-gallery'));
+                return new WP_Error('msog_invalid_graph_url', __('Microsoft Graph returned an invalid pagination URL.', 'cloud-gallery-connector-for-microsoft-365'));
             }
             $url = $path;
         } else {
@@ -94,7 +94,7 @@ class MSOG_Graph {
         if (is_wp_error($res)) return $res;
         $json = json_decode(wp_remote_retrieve_body($res), true);
         if (wp_remote_retrieve_response_code($res) >= 300) {
-            $message = $json['error']['message'] ?? __('Microsoft Graph request failed.', 'ms-sharepoint-onedrive-gallery');
+            $message = $json['error']['message'] ?? __('Microsoft Graph request failed.', 'cloud-gallery-connector-for-microsoft-365');
             return new WP_Error('msog_graph', sanitize_text_field($message));
         }
         if ($cache) {
@@ -139,3 +139,4 @@ class MSOG_Graph {
         return openssl_decrypt(substr($raw, 16), 'AES-256-CBC', $key, OPENSSL_RAW_DATA, substr($raw, 0, 16));
     }
 }
+

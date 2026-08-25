@@ -11,7 +11,7 @@ class MSOG_Admin {
         add_action('admin_enqueue_scripts', array(__CLASS__, 'assets'));
     }
     public static function menu() {
-        add_menu_page(__('Cloud Gallery', 'ms-sharepoint-onedrive-gallery'), __('Cloud Gallery', 'ms-sharepoint-onedrive-gallery'), 'manage_options', 'msog', array(__CLASS__, 'page'), 'dashicons-images-alt2', 58);
+        add_menu_page(__('Cloud Gallery', 'cloud-gallery-connector-for-microsoft-365'), __('Cloud Gallery', 'cloud-gallery-connector-for-microsoft-365'), 'manage_options', 'msog', array(__CLASS__, 'page'), 'dashicons-images-alt2', 58);
     }
     public static function register() {
         register_setting('msog', 'msog_settings', array('sanitize_callback' => array(__CLASS__, 'sanitize')));
@@ -31,13 +31,13 @@ class MSOG_Admin {
         wp_enqueue_script('msog-admin', MSOG_URL . 'assets/admin.js', array(), MSOG_VERSION, true);
     }
     private static function guard() {
-        if (!current_user_can('manage_options')) wp_die(esc_html__('Permission denied.', 'ms-sharepoint-onedrive-gallery'));
+        if (!current_user_can('manage_options')) wp_die(esc_html__('Permission denied.', 'cloud-gallery-connector-for-microsoft-365'));
     }
     public static function connect() {
         self::guard(); check_admin_referer('msog_connect');
         $s = MSOG_Graph::settings();
         if (!$s['client_id'] || !$s['client_secret']) {
-            set_transient('msog_admin_error_' . get_current_user_id(), __('Save the Client ID and Client Secret first.', 'ms-sharepoint-onedrive-gallery'), MINUTE_IN_SECONDS);
+            set_transient('msog_admin_error_' . get_current_user_id(), __('Save the Client ID and Client Secret first.', 'cloud-gallery-connector-for-microsoft-365'), MINUTE_IN_SECONDS);
             wp_safe_redirect(admin_url('admin.php?page=msog'));
         }
         else {
@@ -56,11 +56,11 @@ class MSOG_Admin {
         // value below provides CSRF protection for this external callback.
         // phpcs:ignore WordPress.Security.NonceVerification.Recommended
         $state = sanitize_text_field(wp_unslash($_GET['state'] ?? ''));
-        if (!$expected || !wp_verify_nonce($state, 'msog_oauth_' . get_current_user_id()) || !hash_equals($expected, $state)) wp_die(esc_html__('Invalid or expired Microsoft sign-in request.', 'ms-sharepoint-onedrive-gallery'));
+        if (!$expected || !wp_verify_nonce($state, 'msog_oauth_' . get_current_user_id()) || !hash_equals($expected, $state)) wp_die(esc_html__('Invalid or expired Microsoft sign-in request.', 'cloud-gallery-connector-for-microsoft-365'));
         delete_transient('msog_oauth_' . get_current_user_id());
         // phpcs:ignore WordPress.Security.NonceVerification.Recommended
         if (!empty($_GET['error'])) {
-            set_transient('msog_admin_error_' . get_current_user_id(), __('Microsoft sign-in was cancelled or denied.', 'ms-sharepoint-onedrive-gallery'), MINUTE_IN_SECONDS);
+            set_transient('msog_admin_error_' . get_current_user_id(), __('Microsoft sign-in was cancelled or denied.', 'cloud-gallery-connector-for-microsoft-365'), MINUTE_IN_SECONDS);
             wp_safe_redirect(admin_url('admin.php?page=msog'));
         }
         else {
@@ -86,18 +86,18 @@ class MSOG_Admin {
     }
     public static function page() {
         self::guard(); self::notice(); $s = MSOG_Graph::settings(); $connected = (bool) get_option('msog_refresh_token');
-        echo '<div class="wrap msog-admin"><h1>' . esc_html__('Cloud Gallery Connector for Microsoft 365', 'ms-sharepoint-onedrive-gallery') . '</h1>';
-        echo '<div class="msog-card"><h2>1. ' . esc_html__('Microsoft app settings', 'ms-sharepoint-onedrive-gallery') . '</h2>';
-        echo '<p>' . wp_kses_post(__('Create an app registration in Microsoft Entra, add this exact Web redirect URI, and grant delegated permissions: <code>User.Read</code>, <code>Files.Read.All</code>, and <code>Sites.Read.All</code>.', 'ms-sharepoint-onedrive-gallery')) . '</p>';
-        echo '<div class="msog-copy"><code>' . esc_html(MSOG_Graph::redirect_uri()) . '</code><button type="button" class="button msog-copy-btn">' . esc_html__('Copy', 'ms-sharepoint-onedrive-gallery') . '</button></div>';
+        echo '<div class="wrap msog-admin"><h1>' . esc_html__('Cloud Gallery Connector for Microsoft 365', 'cloud-gallery-connector-for-microsoft-365') . '</h1>';
+        echo '<div class="msog-card"><h2>1. ' . esc_html__('Microsoft app settings', 'cloud-gallery-connector-for-microsoft-365') . '</h2>';
+        echo '<p>' . wp_kses_post(__('Create an app registration in Microsoft Entra, add this exact Web redirect URI, and grant delegated permissions: <code>User.Read</code>, <code>Files.Read.All</code>, and <code>Sites.Read.All</code>.', 'cloud-gallery-connector-for-microsoft-365')) . '</p>';
+        echo '<div class="msog-copy"><code>' . esc_html(MSOG_Graph::redirect_uri()) . '</code><button type="button" class="button msog-copy-btn">' . esc_html__('Copy', 'cloud-gallery-connector-for-microsoft-365') . '</button></div>';
         echo '<form method="post" action="options.php">'; settings_fields('msog');
         echo '<table class="form-table"><tr><th><label for="msog-client">Client ID</label></th><td><input class="regular-text" id="msog-client" name="msog_settings[client_id]" value="' . esc_attr($s['client_id']) . '" required></td></tr>';
-        echo '<tr><th><label for="msog-secret">Client secret</label></th><td><input class="regular-text" type="password" id="msog-secret" name="msog_settings[client_secret]" value="" placeholder="' . esc_attr($s['client_secret'] ? __('Saved — leave blank to keep', 'ms-sharepoint-onedrive-gallery') : '') . '"></td></tr>';
+        echo '<tr><th><label for="msog-secret">Client secret</label></th><td><input class="regular-text" type="password" id="msog-secret" name="msog_settings[client_secret]" value="" placeholder="' . esc_attr($s['client_secret'] ? __('Saved — leave blank to keep', 'cloud-gallery-connector-for-microsoft-365') : '') . '"></td></tr>';
         echo '<tr><th><label for="msog-tenant">Tenant</label></th><td><input class="regular-text" id="msog-tenant" name="msog_settings[tenant]" value="' . esc_attr($s['tenant']) . '"><p class="description">Use <code>common</code>, <code>organizations</code>, or your Microsoft tenant ID.</p></td></tr>';
         echo '<tr><th><label for="msog-cache">Cache (minutes)</label></th><td><input type="number" min="1" max="60" id="msog-cache" name="msog_settings[cache_minutes]" value="' . esc_attr($s['cache_minutes']) . '"></td></tr></table>'; submit_button(); echo '</form></div>';
-        echo '<div class="msog-card"><h2>2. ' . esc_html__('Connect account', 'ms-sharepoint-onedrive-gallery') . '</h2><p><span class="msog-status ' . esc_attr($connected ? 'is-on' : '') . '"></span>' . esc_html($connected ? __('Connected', 'ms-sharepoint-onedrive-gallery') : __('Not connected', 'ms-sharepoint-onedrive-gallery')) . '</p>';
-        if ($connected) { echo '<a class="button" href="' . esc_url(wp_nonce_url(admin_url('admin-post.php?action=msog_disconnect'), 'msog_disconnect')) . '">' . esc_html__('Disconnect', 'ms-sharepoint-onedrive-gallery') . '</a>'; }
-        else { echo '<a class="button button-primary" href="' . esc_url(wp_nonce_url(admin_url('admin-post.php?action=msog_connect'), 'msog_connect')) . '">' . esc_html__('Sign in with Microsoft', 'ms-sharepoint-onedrive-gallery') . '</a>'; }
+        echo '<div class="msog-card"><h2>2. ' . esc_html__('Connect account', 'cloud-gallery-connector-for-microsoft-365') . '</h2><p><span class="msog-status ' . esc_attr($connected ? 'is-on' : '') . '"></span>' . esc_html($connected ? __('Connected', 'cloud-gallery-connector-for-microsoft-365') : __('Not connected', 'cloud-gallery-connector-for-microsoft-365')) . '</p>';
+        if ($connected) { echo '<a class="button" href="' . esc_url(wp_nonce_url(admin_url('admin-post.php?action=msog_disconnect'), 'msog_disconnect')) . '">' . esc_html__('Disconnect', 'cloud-gallery-connector-for-microsoft-365') . '</a>'; }
+        else { echo '<a class="button button-primary" href="' . esc_url(wp_nonce_url(admin_url('admin-post.php?action=msog_connect'), 'msog_connect')) . '">' . esc_html__('Sign in with Microsoft', 'cloud-gallery-connector-for-microsoft-365') . '</a>'; }
         echo '</div>';
         if ($connected) self::browser();
         echo '</div>';
@@ -121,27 +121,28 @@ class MSOG_Admin {
             }
         }
         if (!$drive) { $d = MSOG_Graph::get('me/drive'); if (!is_wp_error($d)) $drive = $d['id']; }
-        echo '<div class="msog-card"><h2>3. ' . esc_html__('Choose a folder and copy its shortcode', 'ms-sharepoint-onedrive-gallery') . '</h2>';
-        echo '<p class="description">' . esc_html__('This browser starts in your OneDrive. To use SharePoint, enter the URL of a site and select one of its document libraries.', 'ms-sharepoint-onedrive-gallery') . '</p>';
-        echo '<form method="get"><input type="hidden" name="page" value="msog">'; wp_nonce_field('msog_browse_admin'); echo '<label><strong>SharePoint site URL</strong> <input class="regular-text" type="url" name="site_url" placeholder="https://company.sharepoint.com/sites/Marketing" value="' . esc_attr($site_url) . '"></label> <button class="button">' . esc_html__('Find libraries', 'ms-sharepoint-onedrive-gallery') . '</button></form>';
-        if ($site_url && !$site_drives) echo '<p class="msog-error">' . esc_html__('No document libraries were found. Check the site URL and Microsoft permissions.', 'ms-sharepoint-onedrive-gallery') . '</p>';
-        if ($site_drives) { echo '<p><strong>' . esc_html__('Document libraries', 'ms-sharepoint-onedrive-gallery') . ':</strong> ';
+        echo '<div class="msog-card"><h2>3. ' . esc_html__('Choose a folder and copy its shortcode', 'cloud-gallery-connector-for-microsoft-365') . '</h2>';
+        echo '<p class="description">' . esc_html__('This browser starts in your OneDrive. To use SharePoint, enter the URL of a site and select one of its document libraries.', 'cloud-gallery-connector-for-microsoft-365') . '</p>';
+        echo '<form method="get"><input type="hidden" name="page" value="msog">'; wp_nonce_field('msog_browse_admin'); echo '<label><strong>SharePoint site URL</strong> <input class="regular-text" type="url" name="site_url" placeholder="https://company.sharepoint.com/sites/Marketing" value="' . esc_attr($site_url) . '"></label> <button class="button">' . esc_html__('Find libraries', 'cloud-gallery-connector-for-microsoft-365') . '</button></form>';
+        if ($site_url && !$site_drives) echo '<p class="msog-error">' . esc_html__('No document libraries were found. Check the site URL and Microsoft permissions.', 'cloud-gallery-connector-for-microsoft-365') . '</p>';
+        if ($site_drives) { echo '<p><strong>' . esc_html__('Document libraries', 'cloud-gallery-connector-for-microsoft-365') . ':</strong> ';
             foreach ($site_drives as $library) echo '<a class="button" href="' . esc_url(add_query_arg(array('page'=>'msog','drive'=>$library['id'],'_wpnonce'=>wp_create_nonce('msog_browse_admin')), admin_url('admin.php'))) . '">' . esc_html($library['name']) . '</a> ';
             echo '</p>'; }
-        echo '<form method="get"><input type="hidden" name="page" value="msog">'; wp_nonce_field('msog_browse_admin'); echo '<label><strong>Drive ID</strong> <input class="regular-text" name="drive" value="' . esc_attr($drive) . '"></label> <button class="button">' . esc_html__('Open', 'ms-sharepoint-onedrive-gallery') . '</button></form>';
-        if (!$drive) { echo '<p>' . esc_html__('Could not load a drive. Check permissions and reconnect.', 'ms-sharepoint-onedrive-gallery') . '</p></div>'; return; }
+        echo '<form method="get"><input type="hidden" name="page" value="msog">'; wp_nonce_field('msog_browse_admin'); echo '<label><strong>Drive ID</strong> <input class="regular-text" name="drive" value="' . esc_attr($drive) . '"></label> <button class="button">' . esc_html__('Open', 'cloud-gallery-connector-for-microsoft-365') . '</button></form>';
+        if (!$drive) { echo '<p>' . esc_html__('Could not load a drive. Check permissions and reconnect.', 'cloud-gallery-connector-for-microsoft-365') . '</p></div>'; return; }
         $data = MSOG_Graph::children($drive, $folder);
         $shortcode = '[msog_gallery drive="' . $drive . '" folder="' . $folder . '" view="gallery" columns="4"]';
-        echo '<div class="msog-copy"><code>' . esc_html($shortcode) . '</code><button type="button" class="button msog-copy-btn">' . esc_html__('Copy shortcode', 'ms-sharepoint-onedrive-gallery') . '</button></div>';
+        echo '<div class="msog-copy"><code>' . esc_html($shortcode) . '</code><button type="button" class="button msog-copy-btn">' . esc_html__('Copy shortcode', 'cloud-gallery-connector-for-microsoft-365') . '</button></div>';
         if (is_wp_error($data)) echo '<p class="msog-error">' . esc_html($data->get_error_message()) . '</p>';
         else { echo '<table class="widefat striped"><thead><tr><th>Name</th><th>Type</th><th>Shortcode</th></tr></thead><tbody>';
             foreach (($data['value'] ?? array()) as $item) { $is_folder = isset($item['folder']); echo '<tr><td>';
                 if ($is_folder) echo '<a href="' . esc_url(add_query_arg(array('page'=>'msog','drive'=>$drive,'folder'=>$item['id'],'_wpnonce'=>wp_create_nonce('msog_browse_admin')), admin_url('admin.php'))) . '"><span class="dashicons dashicons-portfolio"></span> ' . esc_html($item['name']) . '</a>';
                 else echo esc_html($item['name']); echo '</td><td>' . esc_html($is_folder ? 'Folder' : ($item['file']['mimeType'] ?? 'File')) . '</td><td>';
-                if ($is_folder) { $sc = '[msog_gallery drive="' . $drive . '" folder="' . sanitize_text_field($item['id']) . '" view="gallery" columns="4"]'; echo '<code>' . esc_html($sc) . '</code> <button type="button" class="button button-small msog-copy-btn">' . esc_html__('Copy', 'ms-sharepoint-onedrive-gallery') . '</button>'; }
+                if ($is_folder) { $sc = '[msog_gallery drive="' . $drive . '" folder="' . sanitize_text_field($item['id']) . '" view="gallery" columns="4"]'; echo '<code>' . esc_html($sc) . '</code> <button type="button" class="button button-small msog-copy-btn">' . esc_html__('Copy', 'cloud-gallery-connector-for-microsoft-365') . '</button>'; }
                 echo '</td></tr>'; }
             echo '</tbody></table>'; }
         echo '<p><strong>Folder browser:</strong> <code>[msog_gallery drive=&quot;' . esc_html($drive) . '&quot; folder=&quot;' . esc_html($folder) . '&quot; view=&quot;folders&quot; columns=&quot;4&quot;]</code></p>';
         echo '<p><strong>List layout:</strong> <code>[msog_gallery drive=&quot;' . esc_html($drive) . '&quot; folder=&quot;' . esc_html($folder) . '&quot; view=&quot;list&quot;]</code></p></div>';
     }
 }
+

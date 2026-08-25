@@ -4,7 +4,7 @@ Tags: onedrive, sharepoint, gallery, microsoft 365, shortcode
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.3.0
+Stable tag: 1.3.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -61,7 +61,7 @@ Open Cloud Gallery in WordPress admin and select Disconnect. Uninstalling the pl
 The plugin does not include analytics, advertising, or telemetry. It stores Microsoft app settings and an encrypted Microsoft refresh token in the WordPress options table. It adds suggested disclosure text to WordPress's Privacy Policy Guide.
 
 == Changelog ==
-= 1.3.0 =
+= 1.3.1 =
 * Added WordPress nonces to public AJAX and admin folder navigation.
 * Hardened output escaping and HTML allow-listing.
 * Added external-service, privacy, trademark, and security disclosures.
@@ -69,5 +69,6 @@ The plugin does not include analytics, advertising, or telemetry. It stores Micr
 * Added complete WordPress.org release metadata.
 
 == Upgrade Notice ==
-= 1.3.0 =
+= 1.3.1 =
 Security and directory-compliance update. Existing settings and shortcodes are preserved.
+

@@ -9,11 +9,11 @@ class MSOG_Shortcode {
     }
     public static function render($atts) {
         $a = shortcode_atts(array('drive'=>'', 'folder'=>'root', 'view'=>'gallery', 'columns'=>4, 'limit'=>100, 'images_only'=>'no', 'open'=>'microsoft'), $atts, 'msog_gallery');
-        if (!$a['drive']) return self::error(__('Gallery is missing its Drive ID.', 'ms-sharepoint-onedrive-gallery'));
+        if (!$a['drive']) return self::error(__('Gallery is missing its Drive ID.', 'cloud-gallery-connector-for-microsoft-365'));
         $view = in_array($a['view'], array('gallery','list','folders'), true) ? $a['view'] : 'gallery';
         $columns = max(1, min(6, (int) $a['columns'])); $limit = max(1, min(200, (int) $a['limit']));
         $data = MSOG_Graph::children(sanitize_text_field($a['drive']), sanitize_text_field($a['folder']));
-        if (is_wp_error($data)) return current_user_can('manage_options') ? self::error($data->get_error_message()) : self::error(__('This gallery is temporarily unavailable.', 'ms-sharepoint-onedrive-gallery'));
+        if (is_wp_error($data)) return current_user_can('manage_options') ? self::error($data->get_error_message()) : self::error(__('This gallery is temporarily unavailable.', 'cloud-gallery-connector-for-microsoft-365'));
         wp_enqueue_style('msog-gallery', MSOG_URL . 'assets/gallery.css', array(), MSOG_VERSION);
         wp_enqueue_style('msog-lightbox', MSOG_URL . 'assets/lightbox.css', array(), MSOG_VERSION);
         wp_enqueue_script('msog-lightbox', MSOG_URL . 'assets/lightbox.js', array(), MSOG_VERSION, true);
@@ -23,11 +23,11 @@ class MSOG_Shortcode {
             wp_localize_script('msog-browser', 'MSOG_BROWSER', array(
                 'ajaxUrl' => admin_url('admin-ajax.php'),
                 'nonce' => wp_create_nonce('msog_browse_folder'),
-                'loading' => __('Loading folder…', 'ms-sharepoint-onedrive-gallery'),
-                'error' => __('The folder could not be loaded.', 'ms-sharepoint-onedrive-gallery'),
+                'loading' => __('Loading folder…', 'cloud-gallery-connector-for-microsoft-365'),
+                'error' => __('The folder could not be loaded.', 'cloud-gallery-connector-for-microsoft-365'),
             ));
             $payload = self::browser_payload($data['value'] ?? array(), sanitize_text_field($a['drive']));
-            return '<div class="msog-browser" data-drive="' . esc_attr($a['drive']) . '" data-folder="' . esc_attr($a['folder']) . '" data-token="' . esc_attr(self::sign($a['drive'], $a['folder'])) . '"><div class="msog-browser-nav" hidden><button type="button" class="msog-back">&larr; ' . esc_html__('Back', 'ms-sharepoint-onedrive-gallery') . '</button><span class="msog-browser-path"></span></div><div class="msog-browser-status" role="status" aria-live="polite"></div><div class="msog-gallery msog-view-folders" style="--msog-columns:' . esc_attr($columns) . '">' . wp_kses(self::browser_items_html($payload), self::browser_allowed_html()) . '</div></div>';
+            return '<div class="msog-browser" data-drive="' . esc_attr($a['drive']) . '" data-folder="' . esc_attr($a['folder']) . '" data-token="' . esc_attr(self::sign($a['drive'], $a['folder'])) . '"><div class="msog-browser-nav" hidden><button type="button" class="msog-back">&larr; ' . esc_html__('Back', 'cloud-gallery-connector-for-microsoft-365') . '</button><span class="msog-browser-path"></span></div><div class="msog-browser-status" role="status" aria-live="polite"></div><div class="msog-gallery msog-view-folders" style="--msog-columns:' . esc_attr($columns) . '">' . wp_kses(self::browser_items_html($payload), self::browser_allowed_html()) . '</div></div>';
         }
         $items = array_slice($data['value'] ?? array(), 0, $limit); $images_only = strtolower($a['images_only']) === 'yes';
         ob_start(); echo '<div class="msog-gallery msog-view-' . esc_attr($view) . '" style="--msog-columns:' . esc_attr($columns) . '">';
@@ -46,7 +46,7 @@ class MSOG_Shortcode {
             $rendered++;
         }
         echo '</div>';
-        if (!$rendered) echo wp_kses_post(self::error(__('This folder contains no displayable files. Files inside subfolders are not shown automatically.', 'ms-sharepoint-onedrive-gallery')));
+        if (!$rendered) echo wp_kses_post(self::error(__('This folder contains no displayable files. Files inside subfolders are not shown automatically.', 'cloud-gallery-connector-for-microsoft-365')));
         return ob_get_clean();
     }
     private static function size($bytes) { return size_format($bytes, 1); }
@@ -71,7 +71,7 @@ class MSOG_Shortcode {
         return $out;
     }
     private static function browser_items_html($items) {
-        if (!$items) return '<div class="msog-browser-empty">' . esc_html__('This folder is empty.', 'ms-sharepoint-onedrive-gallery') . '</div>';
+        if (!$items) return '<div class="msog-browser-empty">' . esc_html__('This folder is empty.', 'cloud-gallery-connector-for-microsoft-365') . '</div>';
         $html = '';
         foreach ($items as $item) {
             if ($item['folder']) {
@@ -102,10 +102,11 @@ class MSOG_Shortcode {
         $folder = sanitize_text_field(wp_unslash($_POST['folder'] ?? ''));
         $token = sanitize_text_field(wp_unslash($_POST['token'] ?? ''));
         if (!$drive || !$folder || !$token || !hash_equals(self::sign($drive, $folder), $token)) {
-            wp_send_json_error(array('message' => __('Invalid folder request.', 'ms-sharepoint-onedrive-gallery')), 403);
+            wp_send_json_error(array('message' => __('Invalid folder request.', 'cloud-gallery-connector-for-microsoft-365')), 403);
         }
         $data = MSOG_Graph::children($drive, $folder);
         if (is_wp_error($data)) wp_send_json_error(array('message' => $data->get_error_message()), 502);
         wp_send_json_success(array('html' => wp_kses(self::browser_items_html(self::browser_payload($data['value'] ?? array(), $drive)), self::browser_allowed_html())));
     }
 }
+
