@@ -2,7 +2,7 @@
 /**
  * Plugin Name: MS SharePoint & OneDrive Gallery
  * Description: Connect WordPress to Microsoft 365 and embed OneDrive or SharePoint folders with shortcodes.
- * Version: 1.2.1
+ * Version: 1.2.2
  * Author: Devolution
  * License: GPL-2.0-or-later
  * Text Domain: ms-sharepoint-onedrive-gallery
@@ -10,7 +10,7 @@
 
 if (!defined('ABSPATH')) exit;
 
-define('MSOG_VERSION', '1.2.1');
+define('MSOG_VERSION', '1.2.2');
 define('MSOG_FILE', __FILE__);
 define('MSOG_DIR', plugin_dir_path(__FILE__));
 define('MSOG_URL', plugin_dir_url(__FILE__));
