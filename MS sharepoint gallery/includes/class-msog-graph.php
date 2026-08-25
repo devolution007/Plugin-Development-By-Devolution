@@ -97,7 +97,10 @@ class MSOG_Graph {
     }
 
     public static function children($drive_id, $item_id = 'root') {
-        $path = 'drives/' . rawurlencode($drive_id) . '/items/' . rawurlencode($item_id) . '/children';
+        // Microsoft Graph addresses the root as /root/children, not /items/root/children.
+        $path = $item_id === 'root'
+            ? 'drives/' . rawurlencode($drive_id) . '/root/children'
+            : 'drives/' . rawurlencode($drive_id) . '/items/' . rawurlencode($item_id) . '/children';
         $data = self::get($path, array('$select' => 'id,name,size,webUrl,lastModifiedDateTime,file,folder', '$expand' => 'thumbnails', '$top' => 200));
         if (is_wp_error($data)) return $data;
         $items = $data['value'] ?? array(); $next = $data['@odata.nextLink'] ?? '';

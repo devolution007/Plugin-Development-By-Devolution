@@ -13,6 +13,7 @@ class MSOG_Shortcode {
         wp_enqueue_style('msog-gallery', MSOG_URL . 'assets/gallery.css', array(), MSOG_VERSION);
         $items = array_slice($data['value'] ?? array(), 0, $limit); $images_only = strtolower($a['images_only']) === 'yes';
         ob_start(); echo '<div class="msog-gallery msog-view-' . esc_attr($view) . '" style="--msog-columns:' . esc_attr($columns) . '">';
+        $rendered = 0;
         foreach ($items as $item) {
             if (isset($item['folder'])) continue;
             $mime = $item['file']['mimeType'] ?? ''; $is_image = strpos($mime, 'image/') === 0;
@@ -24,8 +25,11 @@ class MSOG_Shortcode {
             echo '<span class="msog-name">' . $name . '</span>';
             if ($view === 'list') echo '<span class="msog-meta">' . esc_html(self::size((int) ($item['size'] ?? 0))) . '</span>';
             echo '</a></article>';
+            $rendered++;
         }
-        echo '</div>'; return ob_get_clean();
+        echo '</div>';
+        if (!$rendered) echo self::error(__('This folder contains no displayable files. Files inside subfolders are not shown automatically.', 'ms-sharepoint-onedrive-gallery'));
+        return ob_get_clean();
     }
     private static function size($bytes) { return size_format($bytes, 1); }
     private static function error($message) { return '<div class="msog-message" role="status">' . esc_html($message) . '</div>'; }
