@@ -101,7 +101,9 @@ class MSOG_Graph {
         $path = $item_id === 'root'
             ? 'drives/' . rawurlencode($drive_id) . '/root/children'
             : 'drives/' . rawurlencode($drive_id) . '/items/' . rawurlencode($item_id) . '/children';
-        $data = self::get($path, array('$select' => 'id,name,size,webUrl,lastModifiedDateTime,file,folder', '$expand' => 'thumbnails', '$top' => 200));
+        // Do not restrict $select: the default driveItem response can include the
+        // short-lived @microsoft.graph.downloadUrl used for full-size lightboxes.
+        $data = self::get($path, array('$expand' => 'thumbnails', '$top' => 200));
         if (is_wp_error($data)) return $data;
         $items = $data['value'] ?? array(); $next = $data['@odata.nextLink'] ?? '';
         // Follow Graph pagination so folders do not disappear in large libraries.
