@@ -26,7 +26,8 @@ add_action('plugins_loaded', function () {
 
 register_activation_hook(__FILE__, function () {
     add_option('dfbf_settings', array(
-        'access_token' => '',
+        'app_id' => '',
+        'app_secret' => '',
         'page' => '',
         'cache_minutes' => 60,
     ));
