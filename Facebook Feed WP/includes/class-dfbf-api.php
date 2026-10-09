@@ -19,15 +19,14 @@ class DFBF_API {
         update_option('dfbf_cache_version', time(), false);
     }
 
-    private static function request($endpoint, array $args) {
+    private static function request($endpoint, array $args, $token = '') {
         $s = self::settings();
-        if ($s['access_token'] === '') {
+        if ($token === '') $token = $s['access_token'];
+        if ($token === '') {
             return new WP_Error('dfbf_no_token', __('No Facebook access token configured. Add one under Settings → Facebook Feed.', 'facebook-feed-wp'));
         }
-        $res = wp_remote_get(add_query_arg($args, self::BASE . $endpoint), array(
-            'timeout' => 15,
-            'headers' => array('Authorization' => 'Bearer ' . $s['access_token']),
-        ));
+        $args['access_token'] = $token;
+        $res = wp_remote_get(add_query_arg($args, self::BASE . $endpoint), array('timeout' => 15));
         if (is_wp_error($res)) return $res;
         $body = json_decode(wp_remote_retrieve_body($res), true);
         if (wp_remote_retrieve_response_code($res) !== 200 || !is_array($body)) {
@@ -70,6 +69,16 @@ class DFBF_API {
         });
     }
 
+    /** If the saved token is a user token, exchange it for the Page's own token; Page tokens pass through unchanged. */
+    private static function page_token($page_id) {
+        $t = self::cached('ptoken|' . $page_id, function () use ($page_id) {
+            $r = self::request(rawurlencode($page_id), array('fields' => 'access_token'));
+            if (is_wp_error($r)) return $r;
+            return !empty($r['access_token']) ? (string) $r['access_token'] : '';
+        });
+        return is_wp_error($t) ? '' : $t;
+    }
+
     /** @return array|WP_Error {items: [{id,message,image,link,date,video}], next: string} */
     public static function posts($page_id, $per_page = 9, $after = '') {
         $per_page = max(1, min(50, (int) $per_page));
@@ -79,7 +88,7 @@ class DFBF_API {
                 'limit' => $per_page,
             );
             if ($after !== '') $args['after'] = $after;
-            $r = self::request(rawurlencode($page_id) . '/posts', $args);
+            $r = self::request(rawurlencode($page_id) . '/posts', $args, self::page_token($page_id));
             if (is_wp_error($r)) return $r;
             $items = array();
             foreach ((array) ($r['data'] ?? array()) as $p) {
