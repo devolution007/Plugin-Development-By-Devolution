@@ -6,6 +6,7 @@ A collection of WordPress plugins by **Devolution**. Each plugin lives in its ow
 | --- | --- | --- | --- |
 | [Cloud Gallery Connector for Microsoft 365](#cloud-gallery-connector-for-microsoft-365) | 1.3.1 | `[msog_gallery]` | Embed OneDrive / SharePoint folders as galleries, file lists, or folder browsers. |
 | [Youtube Feed WP](#youtube-feed-wp) | 1.0.0 | `[devo_youtube_feed]` | Show a YouTube channel or playlist feed with a lightbox player. |
+| [Facebook Feed WP](#facebook-feed-wp) | 1.0.0 | `[devo_facebook_feed]` | Show a Facebook Page feed with a lightbox viewer. |
 
 ## Repository structure
 
@@ -31,7 +32,7 @@ Plugin Development By Devolution/
 |   |-- product-cover.png
 |   |-- readme.txt
 |   `-- uninstall.php
-`-- Youtube Feed WP/
+|-- Youtube Feed WP/
     |-- assets/
     |   |-- feed.css
     |   `-- feed.js
@@ -42,6 +43,17 @@ Plugin Development By Devolution/
     |-- readme.txt
     |-- uninstall.php
     `-- youtube-feed-wp.php
+`-- Facebook Feed WP/
+    |-- assets/
+    |   |-- feed.css
+    |   `-- feed.js
+    |-- includes/
+    |   |-- class-dfbf-admin.php
+    |   |-- class-dfbf-api.php
+    |   `-- class-dfbf-shortcode.php
+    |-- facebook-feed-wp.php
+    |-- readme.txt
+    `-- uninstall.php
 ```
 
 > The hidden `.git/` directory is omitted from the tree.
@@ -51,7 +63,7 @@ Plugin Development By Devolution/
 ### Conventions
 
 - Each plugin is self-contained: a main bootstrap file, an `includes/` folder of PHP classes (one class per file, `class-<prefix>-<name>.php`), an `assets/` folder for CSS/JS, `readme.txt`, and `uninstall.php` for cleanup.
-- Every plugin uses its own constant/class/option prefix (`MSOG_` for Cloud Gallery, `DYTF_` / `dytf_` for Youtube Feed WP).
+- Every plugin uses its own constant/class/option prefix (`MSOG_` for Cloud Gallery, `DYTF_` / `dytf_` for Youtube Feed WP, `DFBF_` / `dfbf_` for Facebook Feed WP).
 - To release, zip the plugin folder so the plugin directory is the top level of the archive, then upload via **Plugins > Add New > Upload Plugin**.
 
 ---
@@ -165,3 +177,64 @@ Displays a YouTube channel or playlist feed on the front end with a shortcode.
 ### External service
 
 Your server calls the YouTube Data API (`googleapis.com`) with your API key to fetch titles, thumbnails, and dates. Visitors load thumbnails from `ytimg.com`, and the lightbox loads `youtube-nocookie.com`. Independent project, not affiliated with or endorsed by YouTube or Google.
+
+---
+
+## Facebook Feed WP
+
+Displays a Facebook Page's posts on the front end with a shortcode.
+
+- **Version:** 1.0.0 | **Requires WordPress:** 5.8+ | **PHP:** 7.4+ | **License:** GPL-2.0-or-later
+
+### Features
+
+- Grid or list layout, 1–6 columns, responsive down to one column on phones.
+- Lightbox viewer (image plus full post text), or open posts on Facebook. Video posts always open on Facebook.
+- "Load more" pagination via AJAX.
+- Accepts a numeric Page ID, Page username, or facebook.com URL.
+- Transient caching (default 60 minutes) to respect Graph API rate limits; one-click cache clear.
+- Posts with no text and no image are skipped; errors are shown to administrators only.
+
+### Files
+
+| File | Purpose |
+| --- | --- |
+| `facebook-feed-wp.php` | Main bootstrap: constants, class loading, default settings on activation. |
+| `includes/class-dfbf-api.php` | Facebook Graph API client with caching and Page resolution. |
+| `includes/class-dfbf-admin.php` | **Settings > Facebook Feed** page: Page access token, default Page, cache duration, usage guide. |
+| `includes/class-dfbf-shortcode.php` | Registers `[devo_facebook_feed]`, renders markup, handles the AJAX load-more endpoint. |
+| `assets/feed.css` | Card grid/list layout, lightbox, responsive rules. |
+| `assets/feed.js` | Lightbox viewer and load-more behavior. |
+| `readme.txt` | WordPress.org-style documentation and external-service disclosure. |
+| `uninstall.php` | Removes settings and cached transients. |
+
+### Setup
+
+1. Zip the `Facebook Feed WP` folder and upload it via **Plugins > Add New > Upload Plugin**, then activate.
+2. Create an app at [Meta for Developers](https://developers.facebook.com/apps/) and, in the Graph API Explorer, generate a long-lived **Page access token** (`pages_read_engagement`, `pages_show_list`) for a Page you manage.
+3. Go to **Settings > Facebook Feed**, paste the token, and set the default Page.
+4. Add the shortcode to any page or post.
+
+> Reading a Page's posts requires a token for that Page (or Meta's "Page Public Content Access" feature after app review). The plugin cannot display arbitrary third-party Pages without that approval.
+
+### Shortcode
+
+```text
+[devo_facebook_feed]
+[devo_facebook_feed page="123456789" limit="6" columns="3"]
+[devo_facebook_feed layout="list" open="facebook" excerpt="20"]
+```
+
+| Attribute | Values (default first) |
+| --- | --- |
+| `page` | Page ID, username, or URL; defaults to the setting |
+| `limit` | `9` (1–50 posts per page) |
+| `columns` | `3` (1–6) |
+| `layout` | `grid` or `list` |
+| `open` | `lightbox` or `facebook` |
+| `excerpt` | `30` (0–200 words; `0` hides text) |
+| `show_date`, `load_more` | `yes` or `no` |
+
+### External service
+
+Your server calls the Facebook Graph API (`graph.facebook.com`) with your Page access token to fetch post text, images, links, and dates. Visitors load images from Facebook's CDN. Independent project, not affiliated with or endorsed by Meta or Facebook.
