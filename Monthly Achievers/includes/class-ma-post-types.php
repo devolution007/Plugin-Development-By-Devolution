@@ -95,10 +95,6 @@ class MA_Post_Types {
                 <td><?php self::select('ma_campus', MA_Groups::campuses(), $get('campus')); ?></td>
             </tr>
             <tr>
-                <th><label for="ma_section"><?php esc_html_e('Section', 'monthly-achievers'); ?> *</label></th>
-                <td><?php self::select('ma_section', MA_Groups::sections(), $get('section')); ?></td>
-            </tr>
-            <tr>
                 <th><label for="ma_month"><?php esc_html_e('Month', 'monthly-achievers'); ?> *</label></th>
                 <td>
                     <input type="month" id="ma_month" name="ma_month" required pattern="\d{4}-\d{2}" placeholder="YYYY-MM" value="<?php echo esc_attr($get('month')); ?>">
@@ -136,7 +132,6 @@ class MA_Post_Types {
         $data = array(
             'id'      => $in('ma_id'),
             'campus'  => $in('ma_campus'),
-            'section' => $in('ma_section'),
             'month'   => $in('ma_month'),
         );
         if ($group['has_grade']) $data['grade'] = $in('ma_grade');
@@ -152,7 +147,6 @@ class MA_Post_Types {
         if ($group['has_grade'] && $data['grade'] === '') $errors[] = __('Grade', 'monthly-achievers');
         if ($data['id'] === '') $errors[] = $group['id_label'];
         if ($data['campus'] === '') $errors[] = __('Campus', 'monthly-achievers');
-        if ($data['section'] === '') $errors[] = __('Section', 'monthly-achievers');
         if ($data['month'] === '') $errors[] = __('Month', 'monthly-achievers');
 
         $message = '';
@@ -212,7 +206,6 @@ class MA_Post_Types {
         if ($group && $group['has_grade']) $new['ma_grade'] = __('Grade', 'monthly-achievers');
         $new['ma_id']      = $group ? $group['id_label'] : __('ID', 'monthly-achievers');
         $new['ma_campus']  = __('Campus', 'monthly-achievers');
-        $new['ma_section'] = __('Section', 'monthly-achievers');
         $new['ma_month']   = __('Month', 'monthly-achievers');
         return $new;
     }

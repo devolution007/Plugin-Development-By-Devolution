@@ -43,7 +43,6 @@ class MA_Shortcodes {
             'groups'   => 'students,huffaz,employees',
             'month'    => 'latest',
             'campus'   => '',
-            'section'  => '',
             'per_page' => 3,
         ), $atts, 'monthly_achievers');
 
@@ -64,14 +63,12 @@ class MA_Shortcodes {
         $uid      = 'ma-' . (++self::$instance);
         $per_page = max(1, min(6, (int) $atts['per_page']));
         $campuses = MA_Groups::campuses();
-        $sections = MA_Groups::sections();
 
         ob_start();
         ?>
         <section class="ma-wrap ma-tabs ma-style-<?php echo esc_attr(MA_Groups::design()['style']); ?>" id="<?php echo esc_attr($uid); ?>" style="--ma-per:<?php echo (int) $per_page; ?>"
                  data-groups="<?php echo esc_attr(implode(',', $keys)); ?>"
-                 data-campus="<?php echo esc_attr($atts['campus']); ?>"
-                 data-section="<?php echo esc_attr($atts['section']); ?>">
+                 data-campus="<?php echo esc_attr($atts['campus']); ?>">
             <div class="ma-toolbar">
                 <?php if (count($keys) > 1) : ?>
                     <div class="ma-tablist" role="tablist">
@@ -92,19 +89,13 @@ class MA_Shortcodes {
                             <?php foreach ($campuses as $c) echo '<option value="' . esc_attr($c) . '">' . esc_html($c) . '</option>'; ?>
                         </select>
                     <?php endif; ?>
-                    <?php if ($atts['section'] === '' && count($sections) > 1) : ?>
-                        <select class="ma-filter" data-filter="section" aria-label="<?php esc_attr_e('Section', 'monthly-achievers'); ?>">
-                            <option value=""><?php esc_html_e('All sections', 'monthly-achievers'); ?></option>
-                            <?php foreach ($sections as $sec) echo '<option value="' . esc_attr($sec) . '">' . esc_html($sec) . '</option>'; ?>
-                        </select>
-                    <?php endif; ?>
                     <select class="ma-month-select" aria-label="<?php esc_attr_e('Month', 'monthly-achievers'); ?>">
                         <?php foreach ($months as $m) echo '<option value="' . esc_attr($m) . '"' . selected($m, $month, false) . '>' . esc_html(MA_Groups::format_month($m)) . '</option>'; ?>
                     </select>
                 </div>
             </div>
             <div class="ma-panels" aria-live="polite">
-                <?php echo self::panels($keys, $month, $atts['campus'], $atts['section'], $uid); // phpcs:ignore WordPress.Security.EscapeOutput ?>
+                <?php echo self::panels($keys, $month, $atts['campus'], $uid); // phpcs:ignore WordPress.Security.EscapeOutput ?>
             </div>
         </section>
         <?php
@@ -112,9 +103,9 @@ class MA_Shortcodes {
     }
 
     /** Markup for every group's carousel panel for one month. */
-    private static function panels($keys, $month, $campus, $section, $uid) {
+    private static function panels($keys, $month, $campus, $uid) {
         $groups = MA_Groups::all();
-        $atts   = array('campus' => $campus, 'section' => $section);
+        $atts   = array('campus' => $campus);
         $out    = '';
         foreach ($keys as $i => $key) {
             $group = $groups[$key];
@@ -139,13 +130,12 @@ class MA_Shortcodes {
         $keys    = self::parse_groups(isset($_POST['groups']) ? sanitize_text_field(wp_unslash($_POST['groups'])) : '');
         $month   = isset($_POST['month']) ? sanitize_text_field(wp_unslash($_POST['month'])) : '';
         $campus  = isset($_POST['campus']) ? sanitize_text_field(wp_unslash($_POST['campus'])) : '';
-        $section = isset($_POST['section']) ? sanitize_text_field(wp_unslash($_POST['section'])) : '';
         $uid     = isset($_POST['uid']) ? preg_replace('/[^a-z0-9\-]/i', '', wp_unslash($_POST['uid'])) : 'ma-0';
 
         if (!$keys || !in_array($month, self::available_months($keys), true)) {
             wp_send_json_error();
         }
-        wp_send_json_success(array('html' => self::panels($keys, $month, $campus, $section, $uid)));
+        wp_send_json_success(array('html' => self::panels($keys, $month, $campus, $uid)));
     }
 
     private static function parse_groups($list) {
@@ -181,7 +171,6 @@ class MA_Shortcodes {
         $atts = shortcode_atts(array(
             'month'   => 'latest',
             'campus'  => '',
-            'section' => '',
             'columns' => 3,
             'limit'   => -1,
         ), $atts, $group['shortcode']);
@@ -224,7 +213,6 @@ class MA_Shortcodes {
     private static function query($group, $month, $atts, $limit = -1) {
         $mq = array(array('key' => '_ma_month', 'value' => $month));
         if (!empty($atts['campus']))  $mq[] = array('key' => '_ma_campus',  'value' => sanitize_text_field($atts['campus']));
-        if (!empty($atts['section'])) $mq[] = array('key' => '_ma_section', 'value' => sanitize_text_field($atts['section']));
 
         return get_posts(array(
             'post_type'      => $group['post_type'],
@@ -240,7 +228,6 @@ class MA_Shortcodes {
     private static function latest_month($post_type, $atts) {
         $mq = array(array('key' => '_ma_month', 'compare' => 'EXISTS'));
         if ($atts['campus'] !== '')  $mq[] = array('key' => '_ma_campus',  'value' => sanitize_text_field($atts['campus']));
-        if ($atts['section'] !== '') $mq[] = array('key' => '_ma_section', 'value' => sanitize_text_field($atts['section']));
 
         $latest = get_posts(array(
             'post_type'      => $post_type,
@@ -261,7 +248,7 @@ class MA_Shortcodes {
         $name = get_the_title($post);
         ob_start();
         ?>
-        <article class="ma-card" data-campus="<?php echo esc_attr($m('campus')); ?>" data-section="<?php echo esc_attr($m('section')); ?>">
+        <article class="ma-card" data-campus="<?php echo esc_attr($m('campus')); ?>">
             <span class="ma-badge"><?php echo esc_html($group['badge']); ?></span>
             <div class="ma-avatar" aria-hidden="true"><?php echo esc_html(self::initials($name)); ?></div>
             <h3 class="ma-name"><?php echo esc_html($name); ?></h3>
@@ -270,9 +257,8 @@ class MA_Shortcodes {
                     <li><span><?php esc_html_e('Grade', 'monthly-achievers'); ?></span><?php echo esc_html($m('grade')); ?></li>
                 <?php endif; ?>
                 <li><span><?php echo esc_html($group['id_label']); ?></span><?php echo esc_html($m('id')); ?></li>
-                <li><span><?php esc_html_e('Section', 'monthly-achievers'); ?></span><?php echo esc_html($m('section')); ?></li>
+                <li><span><?php esc_html_e('Campus', 'monthly-achievers'); ?></span><?php echo esc_html($m('campus')); ?></li>
             </ul>
-            <div class="ma-campus"><?php echo esc_html($m('campus')); ?></div>
         </article>
         <?php
         return ob_get_clean();

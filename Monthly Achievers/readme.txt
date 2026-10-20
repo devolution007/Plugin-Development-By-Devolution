@@ -3,7 +3,7 @@ Contributors: devolution
 Requires at least: 5.8
 Tested up to: 6.6
 Requires PHP: 7.4
-Stable tag: 1.1.0
+Stable tag: 1.1.1
 License: GPLv2 or later
 
 Manage and display Students, Huffaz and Employees of the Month.
@@ -11,7 +11,7 @@ Manage and display Students, Huffaz and Employees of the Month.
 == Description ==
 
 Adds three admin menus: Students of the Month, Huffaz of the Month and Employees of the Month.
-Campus and Section dropdown values are managed under Settings > Monthly Achievers.
+Campus dropdown values are managed under Settings > Monthly Achievers.
 
 Shortcodes:
 
@@ -20,14 +20,17 @@ Shortcodes:
 * [huffaz_of_month]
 * [employees_of_month]
 
-Tabbed carousel of all groups: [monthly_achievers] (groups="students,huffaz,employees", month, campus, section, per_page="3").
+Tabbed carousel of all groups: [monthly_achievers] (groups="students,huffaz,employees", month, campus, per_page="3").
 
-Attributes: month="2026-10" (default: latest), campus="", section="", columns="3", limit="-1".
+Attributes: month="2026-10" (default: latest), campus="", columns="3", limit="-1".
 
 == Changelog ==
 
+= 1.1.1 =
+* Removed the Section field. The card now shows Campus where Section appeared; the `section` shortcode attribute and CSV column are gone.
+
 = 1.1.0 =
-* New [monthly_achievers] shortcode: tabs, carousel, month dropdown, campus/section filters.
+* New [monthly_achievers] shortcode: tabs, carousel, month dropdown, campus filter.
 * Gutenberg block "Monthly Achievers".
 * CSV import/export under Tools > Monthly Achievers.
 * Design options: light/dark cards and accent colours.

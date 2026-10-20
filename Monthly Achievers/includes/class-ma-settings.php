@@ -2,7 +2,7 @@
 if (!defined('ABSPATH')) exit;
 
 /**
- * Settings > Monthly Achievers: manage the Campus and Section dropdown values.
+ * Settings > Monthly Achievers: manage the Campus dropdown values.
  */
 class MA_Settings {
 
@@ -28,7 +28,7 @@ class MA_Settings {
     }
 
     public static function register() {
-        foreach (array('ma_campuses', 'ma_sections') as $option) {
+        foreach (array('ma_campuses') as $option) {
             register_setting('ma_settings', $option, array(
                 'type'              => 'array',
                 'sanitize_callback' => array(__CLASS__, 'sanitize_list'),
@@ -70,17 +70,13 @@ class MA_Settings {
         ?>
         <div class="wrap">
             <h1><?php esc_html_e('Monthly Achievers', 'monthly-achievers'); ?></h1>
-            <p><?php esc_html_e('Manage the values shown in the Campus and Section dropdowns. Enter one value per line.', 'monthly-achievers'); ?></p>
+            <p><?php esc_html_e('Manage the values shown in the Campus dropdown. Enter one value per line.', 'monthly-achievers'); ?></p>
             <form method="post" action="options.php">
                 <?php settings_fields('ma_settings'); ?>
                 <table class="form-table" role="presentation">
                     <tr>
                         <th scope="row"><label for="ma_campuses"><?php esc_html_e('Campuses', 'monthly-achievers'); ?></label></th>
                         <td><textarea id="ma_campuses" name="ma_campuses" rows="8" class="large-text"><?php echo esc_textarea(implode("\n", MA_Groups::campuses())); ?></textarea></td>
-                    </tr>
-                    <tr>
-                        <th scope="row"><label for="ma_sections"><?php esc_html_e('Sections', 'monthly-achievers'); ?></label></th>
-                        <td><textarea id="ma_sections" name="ma_sections" rows="8" class="large-text"><?php echo esc_textarea(implode("\n", MA_Groups::sections())); ?></textarea></td>
                     </tr>
                 </table>
 
@@ -120,7 +116,7 @@ class MA_Settings {
                 <?php endforeach; ?>
             </table>
             <p class="description">
-                <?php esc_html_e('Optional attributes: month="2026-10" (default: latest month), campus="", section="", columns="3", limit="-1". [monthly_achievers] also accepts groups="students,huffaz,employees" and per_page="3".', 'monthly-achievers'); ?>
+                <?php esc_html_e('Optional attributes: month="2026-10" (default: latest month), campus="", columns="3", limit="-1". [monthly_achievers] also accepts groups="students,huffaz,employees" and per_page="3".', 'monthly-achievers'); ?>
             </p>
         </div>
         <?php

@@ -25,7 +25,6 @@
             groups: { type: 'array', items: { type: 'string' }, default: ['students', 'huffaz', 'employees'] },
             month: { type: 'string', default: 'latest' },
             campus: { type: 'string', default: '' },
-            section: { type: 'string', default: '' },
             perPage: { type: 'number', default: 3 }
         },
         edit: function (props) {
@@ -66,11 +65,6 @@
                             label: __('Only this campus', 'monthly-achievers'),
                             value: a.campus, options: options(cfg.campuses, __('All campuses', 'monthly-achievers')),
                             onChange: function (v) { set({ campus: v }); }
-                        }),
-                        el(SelectControl, {
-                            label: __('Only this section', 'monthly-achievers'),
-                            value: a.section, options: options(cfg.sections, __('All sections', 'monthly-achievers')),
-                            onChange: function (v) { set({ section: v }); }
                         })
                     )
                 ),

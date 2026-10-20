@@ -24,7 +24,6 @@ class MA_Block {
         );
         wp_localize_script('monthly-achievers-block', 'MA_Block', array(
             'campuses' => MA_Groups::campuses(),
-            'sections' => MA_Groups::sections(),
             'groups'   => array_map(function ($g) { return $g['menu_name']; }, MA_Groups::all()),
         ));
 
@@ -38,7 +37,6 @@ class MA_Block {
                 'groups'  => array('type' => 'array', 'items' => array('type' => 'string'), 'default' => array('students', 'huffaz', 'employees')),
                 'month'   => array('type' => 'string', 'default' => 'latest'),
                 'campus'  => array('type' => 'string', 'default' => ''),
-                'section' => array('type' => 'string', 'default' => ''),
                 'perPage' => array('type' => 'number', 'default' => 3),
             ),
         ));
@@ -50,7 +48,6 @@ class MA_Block {
             'groups'   => $groups,
             'month'    => isset($attrs['month']) ? $attrs['month'] : 'latest',
             'campus'   => isset($attrs['campus']) ? $attrs['campus'] : '',
-            'section'  => isset($attrs['section']) ? $attrs['section'] : '',
             'per_page' => isset($attrs['perPage']) ? (int) $attrs['perPage'] : 3,
         ));
     }

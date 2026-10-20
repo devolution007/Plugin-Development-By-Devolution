@@ -77,7 +77,6 @@
     font-weight: 600;
 }
 .ma-meta li span { font-weight: 400; color: #6b7280; margin-right: 5px; }
-.ma-campus { font-size: .85em; color: #6b7280; }
 .ma-empty { padding: 20px; text-align: center; background: #f9fafb; border-radius: 8px; color: #6b7280; }
 
 @media (max-width: 900px) { .ma-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
@@ -158,7 +157,8 @@
 @media (max-width: 560px) {
     .ma-wrap.ma-tabs { --ma-n: 1; }
     .ma-tabs .ma-filters, .ma-tabs .ma-filters select { width: 100%; }
-    .ma-tabs .ma-tablist { width: 100%; }
+    .ma-tabs .ma-tablist { width: 100%; flex-direction: column; }
+    .ma-tabs button.ma-tab { width: 100%; text-align: center; }
 }
 
 /* ---------- Card style option ---------- */
@@ -166,5 +166,5 @@
 .ma-style-dark .ma-card { background: #1f2937; color: #f9fafb; box-shadow: 0 4px 18px rgba(0, 0, 0, .45); }
 .ma-style-dark .ma-card .ma-name { color: #fff; }
 .ma-style-dark .ma-meta li { background: #374151; color: #f9fafb; }
-.ma-style-dark .ma-meta li span, .ma-style-dark .ma-campus { color: #9ca3af; }
+.ma-style-dark .ma-meta li span { color: #9ca3af; }
 .ma-style-dark .ma-avatar { box-shadow: 0 0 0 5px rgba(255, 255, 255, .08); }

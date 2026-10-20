@@ -88,10 +88,6 @@ class MA_Groups {
         return (array) get_option('ma_campuses', array());
     }
 
-    public static function sections() {
-        return (array) get_option('ma_sections', array());
-    }
-
     /** "2026-10" => "October 2026" */
     public static function format_month($ym) {
         if (!preg_match('/^(\d{4})-(\d{2})$/', (string) $ym, $m)) return '';

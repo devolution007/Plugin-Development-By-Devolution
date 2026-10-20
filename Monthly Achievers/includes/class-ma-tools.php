@@ -5,8 +5,8 @@ if (!defined('ABSPATH')) exit;
  * Tools > Monthly Achievers Import/Export (CSV).
  *
  * Column order (first row is a header and is skipped):
- *   Students / Huffaz: Name, Grade, GR No, Campus, Section, Month
- *   Employees:         Name, Employee ID, Campus, Section, Month
+ *   Students / Huffaz: Name, Grade, GR No, Campus, Month
+ *   Employees:         Name, Employee ID, Campus, Month
  * Month accepts 2026-10, 10/2026 or "October 2026".
  */
 class MA_Tools {
@@ -33,7 +33,7 @@ class MA_Tools {
     private static function columns($group) {
         $cols = array($group['name_label']);
         if ($group['has_grade']) $cols[] = __('Grade', 'monthly-achievers');
-        return array_merge($cols, array($group['id_label'], __('Campus', 'monthly-achievers'), __('Section', 'monthly-achievers'), __('Month', 'monthly-achievers')));
+        return array_merge($cols, array($group['id_label'], __('Campus', 'monthly-achievers'), __('Month', 'monthly-achievers')));
     }
 
     /* ------------------------------------------------------------- Export */
@@ -66,7 +66,7 @@ class MA_Tools {
             $m   = function ($k) use ($post) { return get_post_meta($post->ID, '_ma_' . $k, true); };
             $row = array(get_the_title($post));
             if ($group['has_grade']) $row[] = $m('grade');
-            $row = array_merge($row, array($m('id'), $m('campus'), $m('section'), $m('month')));
+            $row = array_merge($row, array($m('id'), $m('campus'), $m('month')));
             fputcsv($out, array_map(array(__CLASS__, 'safe_cell'), $row));
         }
         fclose($out);
@@ -104,13 +104,11 @@ class MA_Tools {
         $group      = $all[$key];
         $create     = !empty($_POST['create_missing']);
         $campuses   = MA_Groups::campuses();
-        $sections   = MA_Groups::sections();
         $expected   = count(self::columns($group));
         $imported   = 0;
         $skipped    = 0;
         $errors     = array();
         $new_campus = array();
-        $new_sect   = array();
 
         $fh = fopen($file['tmp_name'], 'r');
         if (!$fh) $fail(__('The file could not be read.', 'monthly-achievers'));
@@ -131,15 +129,13 @@ class MA_Tools {
             if ($group['has_grade']) $grade = $row[$i++];
             $id      = $row[$i++];
             $campus  = $row[$i++];
-            $section = $row[$i++];
             $month   = self::parse_month($row[$i]);
 
             $problem = '';
-            if ($name === '' || ($group['has_grade'] && $grade === '') || $id === '' || $campus === '' || $section === '') $problem = __('a required value is empty', 'monthly-achievers');
+            if ($name === '' || ($group['has_grade'] && $grade === '') || $id === '' || $campus === '') $problem = __('a required value is empty', 'monthly-achievers');
             elseif ($group['id_numeric'] && !ctype_digit($id)) $problem = sprintf(__('%s must be a number', 'monthly-achievers'), $group['id_label']);
             elseif (!$month) $problem = __('invalid month', 'monthly-achievers');
             elseif (!in_array($campus, $campuses, true) && !$create) $problem = sprintf(__('unknown campus "%s"', 'monthly-achievers'), $campus);
-            elseif (!in_array($section, $sections, true) && !$create) $problem = sprintf(__('unknown section "%s"', 'monthly-achievers'), $section);
             elseif (MA_Post_Types::is_duplicate(0, $group['post_type'], $id, $month)) $problem = sprintf(__('%1$s %2$s already exists for %3$s', 'monthly-achievers'), $group['id_label'], $id, MA_Groups::format_month($month));
 
             if ($problem) {
@@ -149,9 +145,8 @@ class MA_Tools {
             }
 
             if (!in_array($campus, $campuses, true))  { $campuses[] = $campus;  $new_campus[] = $campus; }
-            if (!in_array($section, $sections, true)) { $sections[] = $section; $new_sect[]   = $section; }
 
-            $meta = array('_ma_id' => $id, '_ma_campus' => $campus, '_ma_section' => $section, '_ma_month' => $month);
+            $meta = array('_ma_id' => $id, '_ma_campus' => $campus, '_ma_month' => $month);
             if ($group['has_grade']) $meta['_ma_grade'] = $grade;
 
             $post_id = wp_insert_post(array(
@@ -167,13 +162,12 @@ class MA_Tools {
         fclose($fh);
 
         if ($new_campus) update_option('ma_campuses', $campuses);
-        if ($new_sect)   update_option('ma_sections', $sections);
 
         set_transient('ma_import_' . get_current_user_id(), array(
             'imported' => $imported,
             'skipped'  => $skipped,
             'errors'   => $errors,
-            'created'  => array_merge($new_campus, $new_sect),
+            'created'  => $new_campus,
         ), 120);
         wp_safe_redirect($back);
         exit;
@@ -253,7 +247,7 @@ class MA_Tools {
                     </tr>
                     <tr>
                         <th scope="row"><?php esc_html_e('Options', 'monthly-achievers'); ?></th>
-                        <td><label><input type="checkbox" name="create_missing" value="1"> <?php esc_html_e('Add unknown campuses and sections to Settings instead of skipping those rows', 'monthly-achievers'); ?></label></td>
+                        <td><label><input type="checkbox" name="create_missing" value="1"> <?php esc_html_e('Add unknown campuses to Settings instead of skipping those rows', 'monthly-achievers'); ?></label></td>
                     </tr>
                 </table>
                 <?php submit_button(__('Import', 'monthly-achievers')); ?>

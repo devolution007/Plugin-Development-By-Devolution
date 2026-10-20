@@ -50,8 +50,7 @@
             $$(wrap, '.ma-panel').forEach(function (panel) {
                 var shown = 0;
                 $$(panel, '.ma-card').forEach(function (card) {
-                    var ok = (!want.campus || card.getAttribute('data-campus') === want.campus) &&
-                             (!want.section || card.getAttribute('data-section') === want.section);
+                    var ok = !want.campus || card.getAttribute('data-campus') === want.campus;
                     card.hidden = !ok;
                     if (ok) shown++;
                 });
@@ -75,7 +74,6 @@
                 body.append('month', monthSelect.value);
                 body.append('groups', wrap.getAttribute('data-groups'));
                 body.append('campus', wrap.getAttribute('data-campus') || '');
-                body.append('section', wrap.getAttribute('data-section') || '');
                 body.append('uid', wrap.id);
 
                 wrap.classList.add('is-loading');
