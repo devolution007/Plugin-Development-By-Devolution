@@ -74,6 +74,12 @@ class MA_Post_Types {
         ?>
         <p class="description"><?php printf(esc_html__('Enter the %s in the title field above, then complete all fields below.', 'monthly-achievers'), esc_html(strtolower($group['name_label']))); ?></p>
         <table class="form-table" role="presentation">
+            <?php if ($group['has_designation']) : ?>
+                <tr>
+                    <th><label for="ma_designation"><?php esc_html_e('Designation', 'monthly-achievers'); ?> *</label></th>
+                    <td><input type="text" id="ma_designation" name="ma_designation" class="regular-text" required value="<?php echo esc_attr($get('designation')); ?>"></td>
+                </tr>
+            <?php endif; ?>
             <?php if ($group['has_grade']) : ?>
                 <tr>
                     <th><label for="ma_grade"><?php esc_html_e('Grade', 'monthly-achievers'); ?> *</label></th>
@@ -135,6 +141,7 @@ class MA_Post_Types {
             'month'   => $in('ma_month'),
         );
         if ($group['has_grade']) $data['grade'] = $in('ma_grade');
+        if ($group['has_designation']) $data['designation'] = $in('ma_designation');
         if ($group['id_numeric']) $data['id'] = ctype_digit($data['id']) ? $data['id'] : '';
         if (!preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', $data['month'])) $data['month'] = '';
 
@@ -145,6 +152,7 @@ class MA_Post_Types {
         $errors = array();
         if (trim($post->post_title) === '') $errors[] = $group['name_label'];
         if ($group['has_grade'] && $data['grade'] === '') $errors[] = __('Grade', 'monthly-achievers');
+        if ($group['has_designation'] && $data['designation'] === '') $errors[] = __('Designation', 'monthly-achievers');
         if ($data['id'] === '') $errors[] = $group['id_label'];
         if ($data['campus'] === '') $errors[] = __('Campus', 'monthly-achievers');
         if ($data['month'] === '') $errors[] = __('Month', 'monthly-achievers');
@@ -204,6 +212,7 @@ class MA_Post_Types {
         $group = MA_Groups::by_post_type($post_type);
         $new = array('cb' => $cols['cb'], 'title' => $group ? $group['name_label'] : __('Name', 'monthly-achievers'));
         if ($group && $group['has_grade']) $new['ma_grade'] = __('Grade', 'monthly-achievers');
+        if ($group && $group['has_designation']) $new['ma_designation'] = __('Designation', 'monthly-achievers');
         $new['ma_id']      = $group ? $group['id_label'] : __('ID', 'monthly-achievers');
         $new['ma_campus']  = __('Campus', 'monthly-achievers');
         $new['ma_month']   = __('Month', 'monthly-achievers');

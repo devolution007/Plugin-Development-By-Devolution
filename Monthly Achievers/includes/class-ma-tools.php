@@ -6,7 +6,7 @@ if (!defined('ABSPATH')) exit;
  *
  * Column order (first row is a header and is skipped):
  *   Students / Huffaz: Name, Grade, GR No, Campus, Month
- *   Employees:         Name, Employee ID, Campus, Month
+ *   Employees:         Name, Designation, Employee ID, Campus, Month
  * Month accepts 2026-10, 10/2026 or "October 2026".
  */
 class MA_Tools {
@@ -32,6 +32,7 @@ class MA_Tools {
 
     private static function columns($group) {
         $cols = array($group['name_label']);
+        if ($group['has_designation']) $cols[] = __('Designation', 'monthly-achievers');
         if ($group['has_grade']) $cols[] = __('Grade', 'monthly-achievers');
         return array_merge($cols, array($group['id_label'], __('Campus', 'monthly-achievers'), __('Month', 'monthly-achievers')));
     }
@@ -65,6 +66,7 @@ class MA_Tools {
         foreach ($posts as $post) {
             $m   = function ($k) use ($post) { return get_post_meta($post->ID, '_ma_' . $k, true); };
             $row = array(get_the_title($post));
+            if ($group['has_designation']) $row[] = $m('designation');
             if ($group['has_grade']) $row[] = $m('grade');
             $row = array_merge($row, array($m('id'), $m('campus'), $m('month')));
             fputcsv($out, array_map(array(__CLASS__, 'safe_cell'), $row));
@@ -125,6 +127,8 @@ class MA_Tools {
 
             $name = $row[0];
             $i    = 1;
+            $designation = '';
+            if ($group['has_designation']) $designation = $row[$i++];
             $grade = '';
             if ($group['has_grade']) $grade = $row[$i++];
             $id      = $row[$i++];
@@ -132,7 +136,7 @@ class MA_Tools {
             $month   = self::parse_month($row[$i]);
 
             $problem = '';
-            if ($name === '' || ($group['has_grade'] && $grade === '') || $id === '' || $campus === '') $problem = __('a required value is empty', 'monthly-achievers');
+            if ($name === '' || ($group['has_grade'] && $grade === '') || ($group['has_designation'] && $designation === '') || $id === '' || $campus === '') $problem = __('a required value is empty', 'monthly-achievers');
             elseif ($group['id_numeric'] && !ctype_digit($id)) $problem = sprintf(__('%s must be a number', 'monthly-achievers'), $group['id_label']);
             elseif (!$month) $problem = __('invalid month', 'monthly-achievers');
             elseif (!in_array($campus, $campuses, true) && !$create) $problem = sprintf(__('unknown campus "%s"', 'monthly-achievers'), $campus);
@@ -148,6 +152,7 @@ class MA_Tools {
 
             $meta = array('_ma_id' => $id, '_ma_campus' => $campus, '_ma_month' => $month);
             if ($group['has_grade']) $meta['_ma_grade'] = $grade;
+            if ($group['has_designation']) $meta['_ma_designation'] = $designation;
 
             $post_id = wp_insert_post(array(
                 'post_type'   => $group['post_type'],

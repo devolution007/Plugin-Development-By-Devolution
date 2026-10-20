@@ -252,11 +252,16 @@ class MA_Shortcodes {
             <span class="ma-badge"><?php echo esc_html($group['badge']); ?></span>
             <div class="ma-avatar" aria-hidden="true"><?php echo esc_html(self::initials($name)); ?></div>
             <h3 class="ma-name"><?php echo esc_html($name); ?></h3>
+            <?php if ($group['has_designation'] && $m('designation') !== '') : ?>
+                <p class="ma-designation"><?php echo esc_html($m('designation')); ?></p>
+            <?php endif; ?>
             <ul class="ma-meta">
                 <?php if ($group['has_grade'] && $m('grade') !== '') : ?>
                     <li><span><?php esc_html_e('Grade', 'monthly-achievers'); ?></span><?php echo esc_html($m('grade')); ?></li>
                 <?php endif; ?>
                 <li><span><?php echo esc_html($group['id_label']); ?></span><?php echo esc_html($m('id')); ?></li>
+            </ul>
+            <ul class="ma-meta ma-meta-campus">
                 <li><span><?php esc_html_e('Campus', 'monthly-achievers'); ?></span><?php echo esc_html($m('campus')); ?></li>
             </ul>
         </article>

@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Monthly Achievers
  * Description: Manage and showcase Students of the Month, Huffaz of the Month and Employees of the Month with simple shortcodes.
- * Version: 1.1.1
+ * Version: 1.2.0
  * Author: Devolution
  * License: GPL-2.0-or-later
  * Text Domain: monthly-achievers
@@ -13,7 +13,7 @@
 
 if (!defined('ABSPATH')) exit;
 
-define('MA_VERSION', '1.1.1');
+define('MA_VERSION', '1.2.0');
 define('MA_FILE', __FILE__);
 define('MA_DIR', plugin_dir_path(__FILE__));
 define('MA_URL', plugin_dir_url(__FILE__));

@@ -168,3 +168,10 @@
 .ma-style-dark .ma-meta li { background: #374151; color: #f9fafb; }
 .ma-style-dark .ma-meta li span { color: #9ca3af; }
 .ma-style-dark .ma-avatar { box-shadow: 0 0 0 5px rgba(255, 255, 255, .08); }
+
+/* ---------- Designation (employees) ---------- */
+.ma-card .ma-designation { margin: -6px 0 12px; font-size: .9em; font-weight: 600; color: var(--ma-accent); }
+
+/* Same layout on every card: name, designation, ID/grade chips, campus chip on its own line. */
+.ma-card .ma-meta { margin-bottom: 10px; }
+.ma-card .ma-meta-campus { margin-bottom: 0; }

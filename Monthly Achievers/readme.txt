@@ -3,7 +3,7 @@ Contributors: devolution
 Requires at least: 5.8
 Tested up to: 6.6
 Requires PHP: 7.4
-Stable tag: 1.1.1
+Stable tag: 1.2.0
 License: GPLv2 or later
 
 Manage and display Students, Huffaz and Employees of the Month.
@@ -25,6 +25,9 @@ Tabbed carousel of all groups: [monthly_achievers] (groups="students,huffaz,empl
 Attributes: month="2026-10" (default: latest), campus="", columns="3", limit="-1".
 
 == Changelog ==
+
+= 1.2.0 =
+* Employees now have a required Designation field (shown under the name, included in CSV import/export).
 
 = 1.1.1 =
 * Removed the Section field. The card now shows Campus where Section appeared; the `section` shortcode attribute and CSV column are gone.

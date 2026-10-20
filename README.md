@@ -7,7 +7,7 @@ A collection of WordPress plugins by **Devolution**. Each plugin lives in its ow
 | [Cloud Gallery Connector for Microsoft 365](#cloud-gallery-connector-for-microsoft-365) | 1.3.1 | `[msog_gallery]` | Embed OneDrive / SharePoint folders as galleries, file lists, or folder browsers. |
 | [Youtube Feed WP](#youtube-feed-wp) | 1.0.0 | `[devo_youtube_feed]` | Show a YouTube channel or playlist feed with a lightbox player. |
 | [Facebook Feed WP](#facebook-feed-wp) | 1.0.0 | `[devo_facebook_feed]` | Show a Facebook Page feed with a lightbox viewer. |
-| [Monthly Achievers](#monthly-achievers) | 1.1.1 | `[monthly_achievers]` | Manage and showcase Students, Huffaz and Employees of the Month. |
+| [Monthly Achievers](#monthly-achievers) | 1.2.0 | `[monthly_achievers]` | Manage and showcase Students, Huffaz and Employees of the Month. |
 
 ## Repository structure
 
@@ -67,7 +67,7 @@ Plugin Development By Devolution/
     |   |-- class-ma-shortcodes.php
     |   `-- class-ma-tools.php
     |-- monthly-achievers.php
-    |-- monthly-achievers-1.1.1.zip
+    |-- monthly-achievers-1.2.0.zip
     |-- readme.txt
     `-- uninstall.php
 ```
@@ -261,12 +261,12 @@ Your server calls the Facebook Graph API (`graph.facebook.com`) with your Page a
 
 Manages and displays Students of the Month, Huffaz of the Month and Employees of the Month.
 
-- **Version:** 1.1.1 | **Requires WordPress:** 5.8+ | **PHP:** 7.4+ | **License:** GPL-2.0-or-later
+- **Version:** 1.2.0 | **Requires WordPress:** 5.8+ | **PHP:** 7.4+ | **License:** GPL-2.0-or-later
 
 ### Features
 
 - Three admin menus (one per group), each a custom post type with required-field validation and duplicate protection (same GR No / Employee ID in the same month).
-- Fields: Name, Grade (students and huffaz only), GR No (employees: Employee ID), Campus, Month (month and year only).
+- Fields: Name, Grade (students and huffaz only), Designation (employees only), GR No (employees: Employee ID), Campus, Month (month and year only).
 - Campus dropdown values are managed in **Settings > Monthly Achievers**.
 - `[monthly_achievers]`: all groups as tabs, a carousel per tab, month dropdown (AJAX), campus filter.
 - Gutenberg block "Monthly Achievers" with the same options.
@@ -288,11 +288,11 @@ Manages and displays Students of the Month, Huffaz of the Month and Employees of
 | `assets/js/block.js` | Block editor UI (no build step). |
 | `readme.txt` | WordPress.org-style documentation and changelog. |
 | `uninstall.php` | Removes settings; keeps achiever records. |
-| `monthly-achievers-1.1.1.zip` | Installable release package. |
+| `monthly-achievers-1.2.0.zip` | Installable release package. |
 
 ### Setup
 
-1. Upload `monthly-achievers-1.1.1.zip` via **Plugins > Add New > Upload Plugin**, then activate.
+1. Upload `monthly-achievers-1.2.0.zip` via **Plugins > Add New > Upload Plugin**, then activate.
 2. Open **Settings > Monthly Achievers** and enter your Campuses.
 3. Add records under **Students / Huffaz / Employees of the Month**.
 4. Place `[monthly_achievers]` (or the block) on any page.
