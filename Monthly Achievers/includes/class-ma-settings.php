@@ -73,6 +73,10 @@ class MA_Settings {
 
             <h2><?php esc_html_e('Shortcodes', 'monthly-achievers'); ?></h2>
             <table class="widefat striped" style="max-width:720px">
+                <tr>
+                    <td><?php esc_html_e('All groups (tabs + carousel + month dropdown)', 'monthly-achievers'); ?></td>
+                    <td><code>[monthly_achievers]</code></td>
+                </tr>
                 <?php foreach (MA_Groups::all() as $group) : ?>
                     <tr>
                         <td><?php echo esc_html($group['menu_name']); ?></td>
@@ -81,7 +85,7 @@ class MA_Settings {
                 <?php endforeach; ?>
             </table>
             <p class="description">
-                <?php esc_html_e('Optional attributes: month="2026-10" (default: latest month), campus="", section="", columns="3", limit="-1".', 'monthly-achievers'); ?>
+                <?php esc_html_e('Optional attributes: month="2026-10" (default: latest month), campus="", section="", columns="3", limit="-1". [monthly_achievers] also accepts groups="students,huffaz,employees" and per_page="3".', 'monthly-achievers'); ?>
             </p>
         </div>
         <?php

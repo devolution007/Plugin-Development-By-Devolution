@@ -15,9 +15,12 @@ Campus and Section dropdown values are managed under Settings > Monthly Achiever
 
 Shortcodes:
 
+* [monthly_achievers]
 * [students_of_month]
 * [huffaz_of_month]
 * [employees_of_month]
+
+Tabbed carousel of all groups: [monthly_achievers] (groups="students,huffaz,employees", month, campus, section, per_page="3").
 
 Attributes: month="2026-10" (default: latest), campus="", section="", columns="3", limit="-1".
 
