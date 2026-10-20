@@ -172,7 +172,7 @@ class MA_Post_Types {
         }
     }
 
-    private static function is_duplicate($post_id, $post_type, $id, $month) {
+    public static function is_duplicate($post_id, $post_type, $id, $month) {
         $found = get_posts(array(
             'post_type'      => $post_type,
             'post_status'    => array('publish', 'draft', 'pending', 'future', 'private'),

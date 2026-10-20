@@ -10,7 +10,7 @@ class MA_Shortcodes {
     private static $instance = 0;
 
     public static function init() {
-        add_action('wp_enqueue_scripts', array(__CLASS__, 'register_assets'));
+        add_action('init', array(__CLASS__, 'register_assets'));
         add_shortcode('monthly_achievers', array(__CLASS__, 'render_tabs'));
         add_action('wp_ajax_ma_load_month', array(__CLASS__, 'ajax_month'));
         add_action('wp_ajax_nopriv_ma_load_month', array(__CLASS__, 'ajax_month'));
@@ -68,7 +68,7 @@ class MA_Shortcodes {
 
         ob_start();
         ?>
-        <section class="ma-wrap ma-tabs" id="<?php echo esc_attr($uid); ?>" style="--ma-per:<?php echo (int) $per_page; ?>"
+        <section class="ma-wrap ma-tabs ma-style-<?php echo esc_attr(MA_Groups::design()['style']); ?>" id="<?php echo esc_attr($uid); ?>" style="--ma-per:<?php echo (int) $per_page; ?>"
                  data-groups="<?php echo esc_attr(implode(',', $keys)); ?>"
                  data-campus="<?php echo esc_attr($atts['campus']); ?>"
                  data-section="<?php echo esc_attr($atts['section']); ?>">
@@ -206,7 +206,7 @@ class MA_Shortcodes {
 
         ob_start();
         ?>
-        <section class="ma-wrap ma-<?php echo esc_attr($key); ?>" style="--ma-accent:<?php echo esc_attr($group['accent']); ?>;--ma-cols:<?php echo (int) $columns; ?>">
+        <section class="ma-wrap ma-<?php echo esc_attr($key); ?> ma-style-<?php echo esc_attr(MA_Groups::design()['style']); ?>" style="--ma-accent:<?php echo esc_attr($group['accent']); ?>;--ma-cols:<?php echo (int) $columns; ?>">
             <header class="ma-header">
                 <h2 class="ma-title"><?php echo esc_html($group['menu_name']); ?></h2>
                 <span class="ma-month"><?php echo esc_html(MA_Groups::format_month($month)); ?></span>

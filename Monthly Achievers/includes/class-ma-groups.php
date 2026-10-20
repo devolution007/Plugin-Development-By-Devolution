@@ -6,7 +6,27 @@ if (!defined('ABSPATH')) exit;
  */
 class MA_Groups {
 
+    /** Display options saved in Settings. */
+    public static function design() {
+        return wp_parse_args((array) get_option('ma_design', array()), array(
+            'style'           => 'light',
+            'accent_students'  => '',
+            'accent_huffaz'    => '',
+            'accent_employees' => '',
+        ));
+    }
+
     public static function all() {
+        $groups = self::defaults();
+        $design = self::design();
+        foreach ($groups as $key => $group) {
+            $c = isset($design['accent_' . $key]) ? $design['accent_' . $key] : '';
+            if (preg_match('/^#[0-9a-f]{6}$/i', $c)) $groups[$key]['accent'] = $c;
+        }
+        return $groups;
+    }
+
+    private static function defaults() {
         return array(
             'students' => array(
                 'post_type'  => 'ma_student',

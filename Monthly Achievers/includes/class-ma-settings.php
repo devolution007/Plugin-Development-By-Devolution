@@ -35,6 +35,21 @@ class MA_Settings {
                 'default'           => array(),
             ));
         }
+        register_setting('ma_settings', 'ma_design', array(
+            'type'              => 'array',
+            'sanitize_callback' => array(__CLASS__, 'sanitize_design'),
+            'default'           => array(),
+        ));
+    }
+
+    public static function sanitize_design($value) {
+        $value = is_array($value) ? $value : array();
+        $out = array('style' => (isset($value['style']) && $value['style'] === 'dark') ? 'dark' : 'light');
+        foreach (array_keys(MA_Groups::all()) as $key) {
+            $c = isset($value['accent_' . $key]) ? sanitize_hex_color($value['accent_' . $key]) : '';
+            $out['accent_' . $key] = $c ? $c : '';
+        }
+        return $out;
     }
 
     /** Accepts a textarea string (one value per line) and returns a clean array. */
@@ -67,6 +82,26 @@ class MA_Settings {
                         <th scope="row"><label for="ma_sections"><?php esc_html_e('Sections', 'monthly-achievers'); ?></label></th>
                         <td><textarea id="ma_sections" name="ma_sections" rows="8" class="large-text"><?php echo esc_textarea(implode("\n", MA_Groups::sections())); ?></textarea></td>
                     </tr>
+                </table>
+
+                <h2><?php esc_html_e('Design', 'monthly-achievers'); ?></h2>
+                <?php $design = MA_Groups::design(); ?>
+                <table class="form-table" role="presentation">
+                    <tr>
+                        <th scope="row"><label for="ma_style"><?php esc_html_e('Card style', 'monthly-achievers'); ?></label></th>
+                        <td>
+                            <select id="ma_style" name="ma_design[style]">
+                                <option value="light" <?php selected($design['style'], 'light'); ?>><?php esc_html_e('Light cards', 'monthly-achievers'); ?></option>
+                                <option value="dark" <?php selected($design['style'], 'dark'); ?>><?php esc_html_e('Dark cards', 'monthly-achievers'); ?></option>
+                            </select>
+                        </td>
+                    </tr>
+                    <?php foreach (MA_Groups::all() as $key => $group) : ?>
+                        <tr>
+                            <th scope="row"><label for="ma_accent_<?php echo esc_attr($key); ?>"><?php echo esc_html(sprintf(__('%s colour', 'monthly-achievers'), $group['menu_name'])); ?></label></th>
+                            <td><input type="color" id="ma_accent_<?php echo esc_attr($key); ?>" name="ma_design[accent_<?php echo esc_attr($key); ?>]" value="<?php echo esc_attr($group['accent']); ?>"></td>
+                        </tr>
+                    <?php endforeach; ?>
                 </table>
                 <?php submit_button(); ?>
             </form>

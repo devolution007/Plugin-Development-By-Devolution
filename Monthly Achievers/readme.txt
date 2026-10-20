@@ -3,7 +3,7 @@ Contributors: devolution
 Requires at least: 5.8
 Tested up to: 6.6
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.1.0
 License: GPLv2 or later
 
 Manage and display Students, Huffaz and Employees of the Month.
@@ -25,6 +25,12 @@ Tabbed carousel of all groups: [monthly_achievers] (groups="students,huffaz,empl
 Attributes: month="2026-10" (default: latest), campus="", section="", columns="3", limit="-1".
 
 == Changelog ==
+
+= 1.1.0 =
+* New [monthly_achievers] shortcode: tabs, carousel, month dropdown, campus/section filters.
+* Gutenberg block "Monthly Achievers".
+* CSV import/export under Tools > Monthly Achievers.
+* Design options: light/dark cards and accent colours.
 
 = 1.0.0 =
 * Initial release.

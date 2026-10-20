@@ -160,3 +160,11 @@
     .ma-tabs .ma-filters, .ma-tabs .ma-filters select { width: 100%; }
     .ma-tabs .ma-tablist { width: 100%; }
 }
+
+/* ---------- Card style option ---------- */
+.ma-card .ma-name { color: #111827; }
+.ma-style-dark .ma-card { background: #1f2937; color: #f9fafb; box-shadow: 0 4px 18px rgba(0, 0, 0, .45); }
+.ma-style-dark .ma-card .ma-name { color: #fff; }
+.ma-style-dark .ma-meta li { background: #374151; color: #f9fafb; }
+.ma-style-dark .ma-meta li span, .ma-style-dark .ma-campus { color: #9ca3af; }
+.ma-style-dark .ma-avatar { box-shadow: 0 0 0 5px rgba(255, 255, 255, .08); }
