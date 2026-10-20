@@ -21,9 +21,15 @@ class MA_Shortcodes {
         }
     }
 
+    /** Version by file modification time so browser/cache plugins fetch updated assets. */
+    private static function asset_version($rel) {
+        $mtime = @filemtime(MA_DIR . $rel);
+        return $mtime ? MA_VERSION . '.' . $mtime : MA_VERSION;
+    }
+
     public static function register_assets() {
-        wp_register_style('monthly-achievers', MA_URL . 'assets/css/frontend.css', array(), MA_VERSION);
-        wp_register_script('monthly-achievers', MA_URL . 'assets/js/frontend.js', array(), MA_VERSION, true);
+        wp_register_style('monthly-achievers', MA_URL . 'assets/css/frontend.css', array(), self::asset_version('assets/css/frontend.css'));
+        wp_register_script('monthly-achievers', MA_URL . 'assets/js/frontend.js', array(), self::asset_version('assets/js/frontend.js'), true);
         wp_localize_script('monthly-achievers', 'MA_Config', array(
             'ajaxUrl' => admin_url('admin-ajax.php'),
             'noMatch' => __('No achievers match these filters.', 'monthly-achievers'),
