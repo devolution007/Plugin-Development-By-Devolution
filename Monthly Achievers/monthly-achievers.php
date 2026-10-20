@@ -6,6 +6,9 @@
  * Author: Devolution
  * License: GPL-2.0-or-later
  * Text Domain: monthly-achievers
+ * Domain Path: /languages
+ * Requires at least: 5.8
+ * Requires PHP: 7.4
  */
 
 if (!defined('ABSPATH')) exit;
@@ -23,6 +26,7 @@ require_once MA_DIR . 'includes/class-ma-tools.php';
 require_once MA_DIR . 'includes/class-ma-block.php';
 
 add_action('plugins_loaded', function () {
+    load_plugin_textdomain('monthly-achievers', false, dirname(plugin_basename(MA_FILE)) . '/languages');
     MA_Settings::init();
     MA_Post_Types::init();
     MA_Shortcodes::init();

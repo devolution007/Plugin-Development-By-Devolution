@@ -144,10 +144,10 @@
 .ma-tabs .ma-dots { display: flex; justify-content: center; gap: 8px; min-height: 12px; margin: 0; }
 .ma-tabs button.ma-dot {
     -webkit-appearance: none; appearance: none; width: 10px; height: 10px; min-width: 0; margin: 0; padding: 0;
-    border: 0; border-radius: 50%; background: rgba(255, 255, 255, .45); box-shadow: none; cursor: pointer;
+    border: 0; border-radius: 50%; background: #9ca3af; box-shadow: none; cursor: pointer;
 }
-.ma-tabs button.ma-dot.is-active { background: var(--ma-accent); outline: 2px solid #fff; transform: scale(1.2); }
-.ma-tabs .ma-nomatch { text-align: center; color: #fff; padding: 16px; }
+.ma-tabs button.ma-dot.is-active { background: var(--ma-accent); box-shadow: 0 0 0 2px rgba(255, 255, 255, .85); transform: scale(1.2); }
+.ma-tabs .ma-nomatch { text-align: center; color: inherit; opacity: .8; padding: 16px; }
 .ma-tabs .ma-panel[hidden] { display: none; }
 
 @media (max-width: 900px) {

@@ -7,6 +7,7 @@ A collection of WordPress plugins by **Devolution**. Each plugin lives in its ow
 | [Cloud Gallery Connector for Microsoft 365](#cloud-gallery-connector-for-microsoft-365) | 1.3.1 | `[msog_gallery]` | Embed OneDrive / SharePoint folders as galleries, file lists, or folder browsers. |
 | [Youtube Feed WP](#youtube-feed-wp) | 1.0.0 | `[devo_youtube_feed]` | Show a YouTube channel or playlist feed with a lightbox player. |
 | [Facebook Feed WP](#facebook-feed-wp) | 1.0.0 | `[devo_facebook_feed]` | Show a Facebook Page feed with a lightbox viewer. |
+| [Monthly Achievers](#monthly-achievers) | 1.1.0 | `[monthly_achievers]` | Manage and showcase Students, Huffaz and Employees of the Month. |
 
 ## Repository structure
 
@@ -43,15 +44,30 @@ Plugin Development By Devolution/
     |-- readme.txt
     |-- uninstall.php
     `-- youtube-feed-wp.php
-`-- Facebook Feed WP/
+|-- Facebook Feed WP/
+|   |-- assets/
+|   |   |-- feed.css
+|   |   `-- feed.js
+|   |-- includes/
+|   |   |-- class-dfbf-admin.php
+|   |   |-- class-dfbf-api.php
+|   |   `-- class-dfbf-shortcode.php
+|   |-- facebook-feed-wp.php
+|   |-- readme.txt
+|   `-- uninstall.php
+`-- Monthly Achievers/
     |-- assets/
-    |   |-- feed.css
-    |   `-- feed.js
+    |   |-- css/frontend.css
+    |   `-- js/ (frontend.js, block.js)
     |-- includes/
-    |   |-- class-dfbf-admin.php
-    |   |-- class-dfbf-api.php
-    |   `-- class-dfbf-shortcode.php
-    |-- facebook-feed-wp.php
+    |   |-- class-ma-block.php
+    |   |-- class-ma-groups.php
+    |   |-- class-ma-post-types.php
+    |   |-- class-ma-settings.php
+    |   |-- class-ma-shortcodes.php
+    |   `-- class-ma-tools.php
+    |-- monthly-achievers.php
+    |-- monthly-achievers-1.1.0.zip
     |-- readme.txt
     `-- uninstall.php
 ```
@@ -63,7 +79,7 @@ Plugin Development By Devolution/
 ### Conventions
 
 - Each plugin is self-contained: a main bootstrap file, an `includes/` folder of PHP classes (one class per file, `class-<prefix>-<name>.php`), an `assets/` folder for CSS/JS, `readme.txt`, and `uninstall.php` for cleanup.
-- Every plugin uses its own constant/class/option prefix (`MSOG_` for Cloud Gallery, `DYTF_` / `dytf_` for Youtube Feed WP, `DFBF_` / `dfbf_` for Facebook Feed WP).
+- Every plugin uses its own constant/class/option prefix (`MSOG_` for Cloud Gallery, `DYTF_` / `dytf_` for Youtube Feed WP, `DFBF_` / `dfbf_` for Facebook Feed WP, `MA_` / `ma_` for Monthly Achievers).
 - To release, zip the plugin folder so the plugin directory is the top level of the archive, then upload via **Plugins > Add New > Upload Plugin**.
 
 ---
@@ -238,3 +254,67 @@ Displays a Facebook Page's posts on the front end with a shortcode.
 ### External service
 
 Your server calls the Facebook Graph API (`graph.facebook.com`) with your Page access token to fetch post text, images, links, and dates. Visitors load images from Facebook's CDN. Independent project, not affiliated with or endorsed by Meta or Facebook.
+
+---
+
+## Monthly Achievers
+
+Manages and displays Students of the Month, Huffaz of the Month and Employees of the Month.
+
+- **Version:** 1.1.0 | **Requires WordPress:** 5.8+ | **PHP:** 7.4+ | **License:** GPL-2.0-or-later
+
+### Features
+
+- Three admin menus (one per group), each a custom post type with required-field validation and duplicate protection (same GR No / Employee ID in the same month).
+- Fields: Name, Grade (students and huffaz only), GR No (employees: Employee ID), Campus, Section, Month (month and year only).
+- Campus and Section dropdown values are managed in **Settings > Monthly Achievers**.
+- `[monthly_achievers]`: all groups as tabs, a carousel per tab, month dropdown (AJAX), campus and section filters.
+- Gutenberg block "Monthly Achievers" with the same options.
+- CSV import and export under **Tools > Monthly Achievers**.
+- Light or dark card style and a colour per group.
+
+### Files
+
+| File | Purpose |
+| --- | --- |
+| `monthly-achievers.php` | Main bootstrap: constants, class loading, default settings on activation. |
+| `includes/class-ma-groups.php` | Definition of the three groups, design options, helpers. |
+| `includes/class-ma-post-types.php` | Post types, meta box, validation, admin list columns and filters. |
+| `includes/class-ma-settings.php` | Campus / Section lists and design options. |
+| `includes/class-ma-shortcodes.php` | `[monthly_achievers]`, the three single-group shortcodes, AJAX month switch. |
+| `includes/class-ma-tools.php` | CSV import and export. |
+| `includes/class-ma-block.php` | Server-side rendered Gutenberg block. |
+| `assets/css/frontend.css`, `assets/js/frontend.js` | Cards, tabs, carousel, filters. |
+| `assets/js/block.js` | Block editor UI (no build step). |
+| `readme.txt` | WordPress.org-style documentation and changelog. |
+| `uninstall.php` | Removes settings; keeps achiever records. |
+| `monthly-achievers-1.1.0.zip` | Installable release package. |
+
+### Setup
+
+1. Upload `monthly-achievers-1.1.0.zip` via **Plugins > Add New > Upload Plugin**, then activate.
+2. Open **Settings > Monthly Achievers** and enter your Campuses and Sections.
+3. Add records under **Students / Huffaz / Employees of the Month**.
+4. Place `[monthly_achievers]` (or the block) on any page.
+
+### Shortcodes
+
+```text
+[monthly_achievers]
+[monthly_achievers groups="students,huffaz" per_page="4" campus="Main Campus"]
+[students_of_month month="2026-10" columns="3"]
+```
+
+| Attribute | Values (default first) |
+| --- | --- |
+| `groups` | `students,huffaz,employees` (any subset) — `[monthly_achievers]` only |
+| `per_page` | `3` (1–6 cards per view) — `[monthly_achievers]` only |
+| `month` | `latest` or `YYYY-MM` |
+| `campus`, `section` | Limit to one value; empty shows all |
+| `columns`, `limit` | `3` (1–6) / `-1` (all) — single-group shortcodes only |
+
+Single-group shortcodes: `[students_of_month]`, `[huffaz_of_month]`, `[employees_of_month]`.
+
+### External service
+
+None. No data leaves your site.
