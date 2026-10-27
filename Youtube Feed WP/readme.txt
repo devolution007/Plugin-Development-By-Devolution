@@ -3,7 +3,7 @@ Contributors: devolution
 Tags: youtube, video, feed, shortcode, channel
 Requires at least: 6.6
 Tested up to: 6.8
-Requires PHP: 8.5
+Requires PHP: 8.3
 Stable tag: 1.1.0
 License: GPLv2 or later
 
@@ -25,7 +25,7 @@ This plugin calls the YouTube Data API (googleapis.com) from your server, using 
 
 == Changelog ==
 = 1.1.0 =
-* Requires PHP 8.5; strict types and typed signatures throughout.
+* Requires PHP 8.3; strict types and typed signatures throughout.
 * Hardening: strict ID/token/thumbnail-host validation, API key never exposed in errors, response size limit, API key no longer autoloaded.
 
 = 1.0.0 =
