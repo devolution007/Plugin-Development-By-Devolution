@@ -1,36 +1,39 @@
 <?php
+declare(strict_types=1);
+
 if (!defined('ABSPATH')) exit;
 
-class DYTF_Admin {
-    public static function init() {
+final class DYTF_Admin {
+    public static function init(): void {
         add_action('admin_menu', array(__CLASS__, 'menu'));
         add_action('admin_init', array(__CLASS__, 'register'));
         add_action('admin_post_dytf_clear_cache', array(__CLASS__, 'clear_cache'));
-        add_filter('plugin_action_links_' . plugin_basename(DYTF_FILE), function ($links) {
+        add_filter('plugin_action_links_' . plugin_basename(DYTF_FILE), static function (array $links): array {
             array_unshift($links, '<a href="' . esc_url(admin_url('options-general.php?page=dytf')) . '">' . esc_html__('Settings', 'youtube-feed-wp') . '</a>');
             return $links;
         });
     }
 
-    public static function menu() {
+    public static function menu(): void {
         add_options_page(__('YouTube Feed', 'youtube-feed-wp'), __('YouTube Feed', 'youtube-feed-wp'), 'manage_options', 'dytf', array(__CLASS__, 'page'));
     }
 
-    public static function register() {
+    public static function register(): void {
         register_setting('dytf', 'dytf_settings', array('sanitize_callback' => array(__CLASS__, 'sanitize')));
     }
 
-    public static function sanitize($in) {
+    public static function sanitize(mixed $in): array {
+        $in = is_array($in) ? $in : array();
         $old = DYTF_API::settings();
         DYTF_API::bump_cache();
         return array(
-            'api_key' => isset($in['api_key']) ? trim(sanitize_text_field($in['api_key'])) : '',
-            'channel' => isset($in['channel']) ? sanitize_text_field($in['channel']) : '',
+            'api_key' => isset($in['api_key']) ? preg_replace('/[^A-Za-z0-9_-]/', '', (string) $in['api_key']) : '',
+            'channel' => isset($in['channel']) ? sanitize_text_field((string) $in['channel']) : '',
             'cache_minutes' => max(1, min(1440, (int) ($in['cache_minutes'] ?? $old['cache_minutes']))),
         );
     }
 
-    public static function clear_cache() {
+    public static function clear_cache(): void {
         if (!current_user_can('manage_options')) wp_die(esc_html__('Not allowed.', 'youtube-feed-wp'));
         check_admin_referer('dytf_clear_cache');
         DYTF_API::bump_cache();
@@ -38,7 +41,7 @@ class DYTF_Admin {
         exit;
     }
 
-    public static function page() {
+    public static function page(): void {
         if (!current_user_can('manage_options')) return;
         $s = DYTF_API::settings();
         ?>

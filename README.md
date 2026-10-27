@@ -141,7 +141,7 @@ Uses Microsoft's identity platform and Microsoft Graph after an administrator co
 
 Displays a YouTube channel or playlist feed on the front end with a shortcode.
 
-- **Version:** 1.0.0 | **Requires WordPress:** 5.8+ | **PHP:** 7.4+ | **License:** GPL-2.0-or-later
+- **Version:** 1.1.0 | **Requires WordPress:** 6.6+ | **PHP:** 8.5+ | **License:** GPL-2.0-or-later
 
 ### Features
 
@@ -151,6 +151,7 @@ Displays a YouTube channel or playlist feed on the front end with a shortcode.
 - Accepts a channel ID, `@handle`, channel URL, playlist ID, or playlist URL.
 - Transient caching (default 60 minutes) to stay within the free API quota; one-click cache clear.
 - Private and deleted videos are skipped; errors are shown to administrators only.
+- Hardened for PHP 8.5: `strict_types`, typed signatures, strict validation of playlist/video IDs, page tokens and thumbnail hosts, API key never leaked in error output, and capped API response size.
 
 ### Files
 
@@ -200,7 +201,7 @@ Your server calls the YouTube Data API (`googleapis.com`) with your API key to f
 
 Displays a Facebook Page's posts on the front end with a shortcode.
 
-- **Version:** 1.0.0 | **Requires WordPress:** 5.8+ | **PHP:** 7.4+ | **License:** GPL-2.0-or-later
+- **Version:** 1.1.0 | **Requires WordPress:** 6.6+ | **PHP:** 8.5+ | **License:** GPL-2.0-or-later
 
 ### Features
 

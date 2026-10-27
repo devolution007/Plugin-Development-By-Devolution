@@ -1,10 +1,10 @@
 === Youtube Feed WP ===
 Contributors: devolution
 Tags: youtube, video, feed, shortcode, channel
-Requires at least: 5.8
-Tested up to: 6.6
-Requires PHP: 7.4
-Stable tag: 1.0.0
+Requires at least: 6.6
+Tested up to: 6.8
+Requires PHP: 8.5
+Stable tag: 1.1.0
 License: GPLv2 or later
 
 Show a YouTube channel or playlist feed on your site with a shortcode.
@@ -24,5 +24,9 @@ Attributes: channel, playlist, limit, columns, layout (grid|list), play (lightbo
 This plugin calls the YouTube Data API (googleapis.com) from your server, using your API key, to fetch video titles, thumbnails and dates. Visitors load thumbnails from ytimg.com, and the lightbox player loads youtube-nocookie.com. See https://policies.google.com/privacy and https://www.youtube.com/t/terms.
 
 == Changelog ==
+= 1.1.0 =
+* Requires PHP 8.5; strict types and typed signatures throughout.
+* Hardening: strict ID/token/thumbnail-host validation, API key never exposed in errors, response size limit, API key no longer autoloaded.
+
 = 1.0.0 =
 * Initial release.

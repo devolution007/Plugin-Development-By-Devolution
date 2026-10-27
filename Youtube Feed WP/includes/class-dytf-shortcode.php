@@ -1,15 +1,17 @@
 <?php
+declare(strict_types=1);
+
 if (!defined('ABSPATH')) exit;
 
-class DYTF_Shortcode {
-    public static function init() {
+final class DYTF_Shortcode {
+    public static function init(): void {
         add_shortcode('devo_youtube_feed', array(__CLASS__, 'render'));
         add_action('wp_ajax_dytf_more', array(__CLASS__, 'ajax_more'));
         add_action('wp_ajax_nopriv_dytf_more', array(__CLASS__, 'ajax_more'));
         add_action('wp_enqueue_scripts', array(__CLASS__, 'register_assets'));
     }
 
-    public static function register_assets() {
+    public static function register_assets(): void {
         wp_register_style('dytf', DYTF_URL . 'assets/feed.css', array(), DYTF_VERSION);
         wp_register_script('dytf', DYTF_URL . 'assets/feed.js', array(), DYTF_VERSION, true);
         wp_localize_script('dytf', 'DYTF', array(
@@ -19,11 +21,11 @@ class DYTF_Shortcode {
         ));
     }
 
-    private static function yes($v) {
+    private static function yes(mixed $v): bool {
         return !in_array(strtolower((string) $v), array('no', 'false', '0', 'off'), true);
     }
 
-    private static function normalize($a) {
+    private static function normalize(array $a): array {
         return array(
             'limit' => max(1, min(50, (int) ($a['limit'] ?? 9))),
             'columns' => max(1, min(6, (int) ($a['columns'] ?? 3))),
@@ -35,12 +37,14 @@ class DYTF_Shortcode {
         );
     }
 
-    public static function render($atts) {
+    public static function render(array|string $atts = array()): string {
         $atts = shortcode_atts(array(
             'channel' => '', 'playlist' => '', 'limit' => 9, 'columns' => 3, 'layout' => 'grid',
             'play' => 'lightbox', 'show_title' => 'yes', 'show_date' => 'yes', 'load_more' => 'yes',
         ), $atts, 'devo_youtube_feed');
         $o = self::normalize($atts);
+        $atts['channel'] = (string) $atts['channel'];
+        $atts['playlist'] = (string) $atts['playlist'];
 
         $playlist = DYTF_API::resolve_playlist($atts['channel'], $atts['playlist']);
         $data = is_wp_error($playlist) ? $playlist : DYTF_API::videos($playlist, $o['limit']);
@@ -62,14 +66,14 @@ class DYTF_Shortcode {
         return ob_get_clean();
     }
 
-    private static function error($err) {
+    private static function error(WP_Error $err): string {
         // Only site admins see diagnostics; visitors see nothing.
         if (!current_user_can('manage_options')) return '';
         /* translators: %s: error message */
         return '<p class="dytf-error">' . esc_html(sprintf(__('YouTube Feed: %s', 'youtube-feed-wp'), $err->get_error_message())) . '</p>';
     }
 
-    private static function items_html(array $items, array $o) {
+    private static function items_html(array $items, array $o): string {
         $html = '';
         foreach ($items as $v) {
             $url = 'https://www.youtube.com/watch?v=' . rawurlencode($v['id']);
@@ -86,11 +90,11 @@ class DYTF_Shortcode {
         return $html;
     }
 
-    public static function ajax_more() {
+    public static function ajax_more(): void {
         check_ajax_referer('dytf_more', 'nonce');
         $playlist = isset($_POST['playlist']) ? sanitize_text_field(wp_unslash($_POST['playlist'])) : '';
         $token = isset($_POST['token']) ? sanitize_text_field(wp_unslash($_POST['token'])) : '';
-        if (!preg_match('/^[A-Za-z0-9_-]+$/', $playlist) || !preg_match('/^[A-Za-z0-9_-]*$/', $token)) wp_send_json_error();
+        if (!DYTF_API::is_valid_id($playlist) || !preg_match('/^[A-Za-z0-9_-]{0,100}$/D', $token)) wp_send_json_error();
 
         $o = self::normalize(array(
             'limit' => isset($_POST['limit']) ? absint($_POST['limit']) : 9,
