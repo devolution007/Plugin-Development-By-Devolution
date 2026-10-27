@@ -65,6 +65,11 @@ final class DFBF_Shortcode {
             printf('<button type="button" class="dfbf-more" data-next="%s">%s</button>', esc_attr($data['next']), esc_html__('Load more', 'facebook-feed-wp'));
         }
         echo '</div>';
+        if (current_user_can('manage_options')) {
+            // Admin-only diagnostic (invisible to visitors): why the Load more button is or isn't present.
+            printf('<!-- dfbf: facebook_returned=%d shown=%d facebook_has_next=%s cursor_accepted=%s -->',
+                $data['raw_count'], count($data['items']), $data['fb_next'] ? 'yes' : 'no', $data['next'] !== '' ? 'yes' : 'no');
+        }
         return (string) ob_get_clean();
     }
 

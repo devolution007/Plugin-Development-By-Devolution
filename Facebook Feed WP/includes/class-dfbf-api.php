@@ -62,7 +62,7 @@ final class DFBF_API {
 
     public static function is_valid_cursor(string $cursor): bool {
         // Cursors are opaque base64-style strings that can be long; only reject anything that could break out of a query value.
-        return (bool) preg_match('~^[A-Za-z0-9_=+/.~-]{0,4000}$~D', $cursor);
+        return (bool) preg_match('/^[A-Za-z0-9_=+\/.~-]{0,4000}$/D', $cursor);
     }
 
     private static function is_valid_token(mixed $token): bool {
@@ -232,11 +232,11 @@ final class DFBF_API {
         return new WP_Error('dfbf_bad', __('That Page is not connected. Connect an account that manages it.', 'facebook-feed-wp'));
     }
 
-    /** @return array{items:list<array{id:string,message:string,image:string,link:string,date:string,video:bool}>,next:string}|WP_Error */
+    /** @return array{items:list<array{id:string,message:string,image:string,link:string,date:string,video:bool}>,next:string,raw_count:int,fb_next:bool}|WP_Error */
     public static function posts(string $page_id, int $per_page = 9, string $after = ''): array|WP_Error {
         $pages = self::connection()['pages'];
         if (!isset($pages[$page_id])) return new WP_Error('dfbf_bad', __('That Page is not connected.', 'facebook-feed-wp'));
-        if (!self::is_valid_cursor($after)) return new WP_Error('dfbf_bad', __('Invalid pagination cursor.', 'facebook-feed-wp'));
+        if ($after !== '' && !self::is_valid_cursor($after)) return new WP_Error('dfbf_bad', __('Invalid pagination cursor.', 'facebook-feed-wp'));
         $token = $pages[$page_id]['token'];
 
         $per_page = max(1, min(50, $per_page));
@@ -267,7 +267,7 @@ final class DFBF_API {
                 );
             }
             $next = !empty($r['paging']['next']) ? (string) ($r['paging']['cursors']['after'] ?? '') : '';
-            return array('items' => $items, 'next' => self::is_valid_cursor($next) ? $next : '');
+            return array('items' => $items, 'next' => self::is_valid_cursor($next) ? $next : '', 'raw_count' => count((array) ($r['data'] ?? array())), 'fb_next' => !empty($r['paging']['next']));
         });
     }
 }

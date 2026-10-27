@@ -203,11 +203,9 @@ final class DFBF_Admin {
                 <p><?php esc_html_e('Save your App ID and App Secret above, then connect.', 'facebook-feed-wp'); ?></p>
             <?php endif; ?>
             <p>
-                <?php if ($has_app) : ?>
-                    <a class="button button-primary" href="<?php echo esc_url(wp_nonce_url(admin_url('admin-post.php?action=dfbf_connect'), 'dfbf_connect')); ?>">
-                        <?php echo esc_html($conn['pages'] ? __('Reconnect with Facebook', 'facebook-feed-wp') : __('Connect with Facebook', 'facebook-feed-wp')); ?>
-                    </a>
-                <?php endif; ?>
+                <a class="button button-primary<?php echo $has_app ? '' : ' disabled'; ?>" <?php echo $has_app ? '' : 'aria-disabled="true" tabindex="-1"'; ?> href="<?php echo $has_app ? esc_url(wp_nonce_url(admin_url('admin-post.php?action=dfbf_connect'), 'dfbf_connect')) : '#'; ?>">
+                    <?php echo esc_html($conn['pages'] ? __('Reconnect with Facebook', 'facebook-feed-wp') : __('Connect with Facebook', 'facebook-feed-wp')); ?>
+                </a>
                 <?php if ($conn['pages']) : ?>
                     <a class="button" href="<?php echo esc_url(wp_nonce_url(admin_url('admin-post.php?action=dfbf_disconnect'), 'dfbf_disconnect')); ?>"><?php esc_html_e('Disconnect', 'facebook-feed-wp'); ?></a>
                 <?php endif; ?>
