@@ -11,19 +11,27 @@ final class DFBF_API {
     private const string BASE = 'https://graph.facebook.com/' . self::VERSION . '/';
     private const string SCOPES = 'pages_show_list,pages_read_engagement,business_management';
 
-    /** @return array{app_id:string,app_secret:string,page:string,cache_minutes:int} */
+    /** @return array{app_id:string,app_secret:string,page:string,cache_minutes:int,excerpt:int,link_label:string,strip_urls:int,strip_hashtags:int} */
     public static function settings(): array {
         $s = wp_parse_args((array) get_option('dfbf_settings', array()), array(
             'app_id' => '',
             'app_secret' => '',
             'page' => '',
             'cache_minutes' => 60,
+            'excerpt' => 30,
+            'link_label' => '',
+            'strip_urls' => 0,
+            'strip_hashtags' => 0,
         ));
         return array(
             'app_id' => (string) $s['app_id'],
             'app_secret' => (string) $s['app_secret'],
             'page' => (string) $s['page'],
             'cache_minutes' => (int) $s['cache_minutes'],
+            'excerpt' => max(0, min(200, (int) $s['excerpt'])),
+            'link_label' => trim((string) $s['link_label']) !== '' ? trim((string) $s['link_label']) : __('View on Facebook', 'facebook-feed-wp'),
+            'strip_urls' => empty($s['strip_urls']) ? 0 : 1,
+            'strip_hashtags' => empty($s['strip_hashtags']) ? 0 : 1,
         );
     }
 
@@ -53,7 +61,8 @@ final class DFBF_API {
     }
 
     public static function is_valid_cursor(string $cursor): bool {
-        return (bool) preg_match('~^[A-Za-z0-9_=+/-]{0,500}$~D', $cursor);
+        // Cursors are opaque base64-style strings that can be long; only reject anything that could break out of a query value.
+        return (bool) preg_match('~^[A-Za-z0-9_=+/.~-]{0,4000}$~D', $cursor);
     }
 
     private static function is_valid_token(mixed $token): bool {
@@ -174,7 +183,7 @@ final class DFBF_API {
 
     /** @return array<string,mixed>|WP_Error */
     private static function graph(string $endpoint, array $args): array|WP_Error {
-        $res = wp_remote_get(add_query_arg($args, self::BASE . $endpoint), array(
+        $res = wp_remote_get(add_query_arg(array_map('rawurlencode', array_map('strval', $args)), self::BASE . $endpoint), array(
             'timeout' => 15,
             'redirection' => 0,
             'sslverify' => true,

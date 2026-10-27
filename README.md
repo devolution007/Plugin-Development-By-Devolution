@@ -208,6 +208,7 @@ Displays a Facebook Page's posts on the front end with a shortcode.
 - Grid or list layout, 1–6 columns, responsive down to one column on phones.
 - Lightbox viewer (image plus full post text), or open posts on Facebook. Video posts always open on Facebook.
 - "Load more" pagination via AJAX.
+- Excerpt controls in settings: default length in words, strip links and #hashtags from card text, custom link text (e.g. "Read more"); the shortcode can override.
 - "Login with Facebook" connection: no tokens to copy. The plugin stores each managed Page's non-expiring token, including Pages managed through a Business Portfolio.
 - Accepts a connected Page's ID, name, or facebook.com URL.
 - Transient caching (default 60 minutes) to respect Graph API rate limits; one-click cache clear.
@@ -252,7 +253,8 @@ Displays a Facebook Page's posts on the front end with a shortcode.
 | `columns` | `3` (1–6) |
 | `layout` | `grid` or `list` |
 | `open` | `lightbox` or `facebook` |
-| `excerpt` | `30` (0–200 words; `0` hides text) |
+| `excerpt` | `0`–`200` words; `0` hides text (default: setting, 30) |
+| `link_text` | Label under each post (default: setting) |
 | `show_date`, `load_more` | `yes` or `no` |
 
 ### External service

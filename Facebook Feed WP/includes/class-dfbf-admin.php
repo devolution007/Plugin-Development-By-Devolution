@@ -51,6 +51,10 @@ final class DFBF_Admin {
             'app_secret' => isset($in['app_secret']) ? trim(sanitize_text_field((string) $in['app_secret'])) : $old['app_secret'],
             'page' => $page,
             'cache_minutes' => max(1, min(1440, (int) ($in['cache_minutes'] ?? $old['cache_minutes']))),
+            'excerpt' => max(0, min(200, (int) ($in['excerpt'] ?? $old['excerpt']))),
+            'link_label' => isset($in['link_label']) ? mb_substr(trim(sanitize_text_field((string) $in['link_label'])), 0, 60) : $old['link_label'],
+            'strip_urls' => !empty($in['strip_urls']) ? 1 : 0,
+            'strip_hashtags' => !empty($in['strip_hashtags']) ? 1 : 0,
         );
     }
 
@@ -156,6 +160,27 @@ final class DFBF_Admin {
                     </tr>
                     <?php endif; ?>
                     <tr>
+                        <th scope="row"><label for="dfbf_excerpt"><?php esc_html_e('Excerpt length (words)', 'facebook-feed-wp'); ?></label></th>
+                        <td>
+                            <input type="number" id="dfbf_excerpt" name="dfbf_settings[excerpt]" value="<?php echo esc_attr((string) $s['excerpt']); ?>" min="0" max="200" class="small-text">
+                            <p class="description"><?php esc_html_e('Words of post text shown on each card. 0 hides the text. The lightbox always shows the full post. A shortcode excerpt="" attribute overrides this.', 'facebook-feed-wp'); ?></p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><?php esc_html_e('Clean up excerpt', 'facebook-feed-wp'); ?></th>
+                        <td>
+                            <label><input type="checkbox" name="dfbf_settings[strip_urls]" value="1" <?php checked($s['strip_urls'], 1); ?>> <?php esc_html_e('Remove links (URLs)', 'facebook-feed-wp'); ?></label><br>
+                            <label><input type="checkbox" name="dfbf_settings[strip_hashtags]" value="1" <?php checked($s['strip_hashtags'], 1); ?>> <?php esc_html_e('Remove #hashtags', 'facebook-feed-wp'); ?></label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><label for="dfbf_link_label"><?php esc_html_e('Link text', 'facebook-feed-wp'); ?></label></th>
+                        <td>
+                            <input type="text" id="dfbf_link_label" name="dfbf_settings[link_label]" value="<?php echo esc_attr($s['link_label']); ?>" maxlength="60" class="regular-text">
+                            <p class="description"><?php esc_html_e('Label of the link under each post, e.g. "Read more". A shortcode link_text="" attribute overrides this.', 'facebook-feed-wp'); ?></p>
+                        </td>
+                    </tr>
+                    <tr>
                         <th scope="row"><label for="dfbf_cache"><?php esc_html_e('Cache (minutes)', 'facebook-feed-wp'); ?></label></th>
                         <td>
                             <input type="number" id="dfbf_cache" name="dfbf_settings[cache_minutes]" value="<?php echo esc_attr($s['cache_minutes']); ?>" min="1" max="1440" class="small-text">
@@ -198,7 +223,7 @@ final class DFBF_Admin {
             <h2><?php esc_html_e('Usage', 'facebook-feed-wp'); ?></h2>
             <p><code>[devo_facebook_feed]</code> — <?php esc_html_e('uses the default Page above.', 'facebook-feed-wp'); ?></p>
             <p><code>[devo_facebook_feed page="123456789" limit="6" columns="3"]</code></p>
-            <p><code>[devo_facebook_feed layout="list" open="facebook" excerpt="20"]</code></p>
+            <p><code>[devo_facebook_feed layout="list" open="facebook" excerpt="20" link_text="Read more"]</code></p>
             <table class="widefat striped" style="max-width:760px">
                 <thead><tr><th><?php esc_html_e('Attribute', 'facebook-feed-wp'); ?></th><th><?php esc_html_e('Values (default first)', 'facebook-feed-wp'); ?></th></tr></thead>
                 <tbody>
@@ -207,7 +232,8 @@ final class DFBF_Admin {
                     <tr><td>columns</td><td>3 (1–6)</td></tr>
                     <tr><td>layout</td><td>grid | list</td></tr>
                     <tr><td>open</td><td>lightbox | facebook — <?php esc_html_e('popup viewer or open the post on Facebook (video posts always open on Facebook)', 'facebook-feed-wp'); ?></td></tr>
-                    <tr><td>excerpt</td><td>30 (0–200) — <?php esc_html_e('words of post text shown on the card; 0 hides it', 'facebook-feed-wp'); ?></td></tr>
+                    <tr><td>excerpt</td><td><?php esc_html_e('0–200 words of post text on the card; 0 hides it (default: settings, 30)', 'facebook-feed-wp'); ?></td></tr>
+                    <tr><td>link_text</td><td><?php esc_html_e('Label of the link under each post (default: settings)', 'facebook-feed-wp'); ?></td></tr>
                     <tr><td>show_date</td><td>yes | no</td></tr>
                     <tr><td>load_more</td><td>yes | no</td></tr>
                 </tbody>

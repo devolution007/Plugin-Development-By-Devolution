@@ -26,12 +26,16 @@ final class DFBF_Shortcode {
     }
 
     private static function normalize(array $a): array {
+        $s = DFBF_API::settings();
+        $excerpt = (string) ($a['excerpt'] ?? '');
+        $link = mb_substr(trim(sanitize_text_field((string) ($a['link_text'] ?? ''))), 0, 60);
         return array(
             'limit' => max(1, min(50, (int) ($a['limit'] ?? 9))),
             'columns' => max(1, min(6, (int) ($a['columns'] ?? 3))),
             'layout' => ($a['layout'] ?? '') === 'list' ? 'list' : 'grid',
             'open' => ($a['open'] ?? '') === 'facebook' ? 'facebook' : 'lightbox',
-            'excerpt' => max(0, min(200, (int) ($a['excerpt'] ?? 30))),
+            'excerpt' => max(0, min(200, $excerpt === '' ? $s['excerpt'] : (int) $excerpt)),
+            'link_text' => $link !== '' ? $link : $s['link_label'],
             'show_date' => self::yes($a['show_date'] ?? 'yes') ? 'yes' : 'no',
             'load_more' => self::yes($a['load_more'] ?? 'yes') ? 'yes' : 'no',
         );
@@ -40,7 +44,7 @@ final class DFBF_Shortcode {
     public static function render(array|string $atts = array()): string {
         $atts = shortcode_atts(array(
             'page' => '', 'limit' => 9, 'columns' => 3, 'layout' => 'grid',
-            'open' => 'lightbox', 'excerpt' => 30, 'show_date' => 'yes', 'load_more' => 'yes',
+            'open' => 'lightbox', 'excerpt' => '', 'link_text' => '', 'show_date' => 'yes', 'load_more' => 'yes',
         ), $atts, 'devo_facebook_feed');
         $o = self::normalize($atts);
 
@@ -54,8 +58,8 @@ final class DFBF_Shortcode {
 
         $cls = 'dfbf-feed dfbf-' . $o['layout'] . ' dfbf-cols-' . $o['columns'];
         ob_start();
-        printf('<div class="%s" data-page="%s" data-limit="%d" data-open="%s" data-excerpt="%d" data-date="%s">',
-            esc_attr($cls), esc_attr($page), $o['limit'], esc_attr($o['open']), $o['excerpt'], esc_attr($o['show_date']));
+        printf('<div class="%s" data-page="%s" data-limit="%d" data-open="%s" data-excerpt="%d" data-link="%s" data-date="%s">',
+            esc_attr($cls), esc_attr($page), $o['limit'], esc_attr($o['open']), $o['excerpt'], esc_attr($o['link_text']), esc_attr($o['show_date']));
         echo '<div class="dfbf-items">' . self::items_html($data['items'], $o) . '</div>';
         if ($o['load_more'] === 'yes' && $data['next'] !== '') {
             printf('<button type="button" class="dfbf-more" data-next="%s">%s</button>', esc_attr($data['next']), esc_html__('Load more', 'facebook-feed-wp'));
@@ -69,6 +73,15 @@ final class DFBF_Shortcode {
         if (!current_user_can('manage_options')) return '';
         /* translators: %s: error message */
         return '<p class="dfbf-error">' . esc_html(sprintf(__('Facebook Feed: %s', 'facebook-feed-wp'), $err->get_error_message())) . '</p>';
+    }
+
+    /** Short card text: optionally strips URLs/hashtags, collapses whitespace, trims to N words. */
+    private static function excerpt(string $message, int $words): string {
+        $s = DFBF_API::settings();
+        if ($s['strip_urls']) $message = (string) preg_replace('~(?:https?://|www\.)\S+~iu', '', $message);
+        if ($s['strip_hashtags']) $message = (string) preg_replace('/(?<!\S)#[\p{L}\p{N}_]+/u', '', $message);
+        $message = trim((string) preg_replace('/\s+/u', ' ', $message));
+        return wp_trim_words($message, $words, '…');
     }
 
     private static function items_html(array $items, array $o): string {
@@ -88,9 +101,9 @@ final class DFBF_Shortcode {
                 $html .= '<time class="dfbf-date" datetime="' . esc_attr($p['date']) . '">' . esc_html(mysql2date(get_option('date_format'), $p['date'])) . '</time>';
             }
             if ($o['excerpt'] > 0 && $p['message'] !== '') {
-                $html .= '<p class="dfbf-text">' . esc_html(wp_trim_words($p['message'], $o['excerpt'])) . '</p>';
+                $html .= '<p class="dfbf-text">' . esc_html(self::excerpt($p['message'], $o['excerpt'])) . '</p>';
             }
-            $html .= '<a class="dfbf-link" href="' . esc_url($p['link']) . '" target="_blank" rel="noopener noreferrer">' . esc_html__('View on Facebook', 'facebook-feed-wp') . '</a>';
+            $html .= '<a class="dfbf-link" href="' . esc_url($p['link']) . '" target="_blank" rel="noopener noreferrer">' . esc_html($o['link_text']) . '</a>';
             $html .= '</div>';
             if ($lightbox && $p['message'] !== '') {
                 $html .= '<div class="dfbf-full" hidden>' . nl2br(esc_html($p['message'])) . '</div>';
@@ -109,7 +122,8 @@ final class DFBF_Shortcode {
         $o = self::normalize(array(
             'limit' => isset($_POST['limit']) ? absint($_POST['limit']) : 9,
             'open' => isset($_POST['open']) ? sanitize_key(wp_unslash($_POST['open'])) : '',
-            'excerpt' => isset($_POST['excerpt']) ? absint($_POST['excerpt']) : 30,
+            'excerpt' => isset($_POST['excerpt']) ? absint($_POST['excerpt']) : '',
+            'link_text' => isset($_POST['link_text']) ? sanitize_text_field(wp_unslash($_POST['link_text'])) : '',
             'show_date' => isset($_POST['show_date']) ? sanitize_key(wp_unslash($_POST['show_date'])) : 'yes',
         ));
         $data = DFBF_API::posts($page, $o['limit'], $token);

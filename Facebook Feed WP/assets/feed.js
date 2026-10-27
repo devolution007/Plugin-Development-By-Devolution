@@ -61,7 +61,7 @@
     var d = box.dataset;
     var body = new URLSearchParams({
       action: 'dfbf_more', nonce: DFBF.nonce, page: d.page, token: more.dataset.next,
-      limit: d.limit, open: d.open, excerpt: d.excerpt, show_date: d.date
+      limit: d.limit, open: d.open, excerpt: d.excerpt, link_text: d.link, show_date: d.date
     });
     more.disabled = true;
     fetch(DFBF.ajax, { method: 'POST', body: body })
