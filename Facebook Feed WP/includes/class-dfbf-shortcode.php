@@ -1,15 +1,17 @@
 <?php
+declare(strict_types=1);
+
 if (!defined('ABSPATH')) exit;
 
-class DFBF_Shortcode {
-    public static function init() {
+final class DFBF_Shortcode {
+    public static function init(): void {
         add_shortcode('devo_facebook_feed', array(__CLASS__, 'render'));
         add_action('wp_ajax_dfbf_more', array(__CLASS__, 'ajax_more'));
         add_action('wp_ajax_nopriv_dfbf_more', array(__CLASS__, 'ajax_more'));
         add_action('wp_enqueue_scripts', array(__CLASS__, 'register_assets'));
     }
 
-    public static function register_assets() {
+    public static function register_assets(): void {
         wp_register_style('dfbf', DFBF_URL . 'assets/feed.css', array(), DFBF_VERSION);
         wp_register_script('dfbf', DFBF_URL . 'assets/feed.js', array(), DFBF_VERSION, true);
         wp_localize_script('dfbf', 'DFBF', array(
@@ -19,11 +21,11 @@ class DFBF_Shortcode {
         ));
     }
 
-    private static function yes($v) {
+    private static function yes(mixed $v): bool {
         return !in_array(strtolower((string) $v), array('no', 'false', '0', 'off'), true);
     }
 
-    private static function normalize($a) {
+    private static function normalize(array $a): array {
         return array(
             'limit' => max(1, min(50, (int) ($a['limit'] ?? 9))),
             'columns' => max(1, min(6, (int) ($a['columns'] ?? 3))),
@@ -35,14 +37,14 @@ class DFBF_Shortcode {
         );
     }
 
-    public static function render($atts) {
+    public static function render(array|string $atts = array()): string {
         $atts = shortcode_atts(array(
             'page' => '', 'limit' => 9, 'columns' => 3, 'layout' => 'grid',
             'open' => 'lightbox', 'excerpt' => 30, 'show_date' => 'yes', 'load_more' => 'yes',
         ), $atts, 'devo_facebook_feed');
         $o = self::normalize($atts);
 
-        $page = DFBF_API::resolve_page($atts['page']);
+        $page = DFBF_API::resolve_page((string) $atts['page']);
         $data = is_wp_error($page) ? $page : DFBF_API::posts($page, $o['limit']);
         if (is_wp_error($data)) return self::error($data);
         if (empty($data['items'])) return '<p class="dfbf-empty">' . esc_html__('No posts found.', 'facebook-feed-wp') . '</p>';
@@ -59,25 +61,25 @@ class DFBF_Shortcode {
             printf('<button type="button" class="dfbf-more" data-next="%s">%s</button>', esc_attr($data['next']), esc_html__('Load more', 'facebook-feed-wp'));
         }
         echo '</div>';
-        return ob_get_clean();
+        return (string) ob_get_clean();
     }
 
-    private static function error($err) {
+    private static function error(WP_Error $err): string {
         // Only site admins see diagnostics; visitors see nothing.
         if (!current_user_can('manage_options')) return '';
         /* translators: %s: error message */
         return '<p class="dfbf-error">' . esc_html(sprintf(__('Facebook Feed: %s', 'facebook-feed-wp'), $err->get_error_message())) . '</p>';
     }
 
-    private static function items_html(array $items, array $o) {
+    private static function items_html(array $items, array $o): string {
         $html = '';
         foreach ($items as $p) {
             $lightbox = $o['open'] === 'lightbox' && !$p['video'];
             $html .= '<article class="dfbf-item' . ($p['image'] === '' ? ' dfbf-text-only' : '') . '">';
             if ($p['image'] !== '') {
-                $html .= '<a class="dfbf-thumb" href="' . esc_url($p['link']) . '" target="_blank" rel="noopener"'
+                $html .= '<a class="dfbf-thumb" href="' . esc_url($p['link']) . '" target="_blank" rel="noopener noreferrer"'
                     . ($lightbox ? ' data-full="' . esc_url($p['image']) . '"' : '') . '>'
-                    . '<img src="' . esc_url($p['image']) . '" alt="" loading="lazy">'
+                    . '<img src="' . esc_url($p['image']) . '" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">'
                     . ($p['video'] ? '<span class="dfbf-play" aria-hidden="true"></span>' : '')
                     . '</a>';
             }
@@ -88,7 +90,7 @@ class DFBF_Shortcode {
             if ($o['excerpt'] > 0 && $p['message'] !== '') {
                 $html .= '<p class="dfbf-text">' . esc_html(wp_trim_words($p['message'], $o['excerpt'])) . '</p>';
             }
-            $html .= '<a class="dfbf-link" href="' . esc_url($p['link']) . '" target="_blank" rel="noopener">' . esc_html__('View on Facebook', 'facebook-feed-wp') . '</a>';
+            $html .= '<a class="dfbf-link" href="' . esc_url($p['link']) . '" target="_blank" rel="noopener noreferrer">' . esc_html__('View on Facebook', 'facebook-feed-wp') . '</a>';
             $html .= '</div>';
             if ($lightbox && $p['message'] !== '') {
                 $html .= '<div class="dfbf-full" hidden>' . nl2br(esc_html($p['message'])) . '</div>';
@@ -98,11 +100,11 @@ class DFBF_Shortcode {
         return $html;
     }
 
-    public static function ajax_more() {
+    public static function ajax_more(): void {
         check_ajax_referer('dfbf_more', 'nonce');
         $page = isset($_POST['page']) ? sanitize_text_field(wp_unslash($_POST['page'])) : '';
         $token = isset($_POST['token']) ? sanitize_text_field(wp_unslash($_POST['token'])) : '';
-        if (!preg_match('/^\d+$/', $page) || !preg_match('/^[A-Za-z0-9_=\-]*$/', $token)) wp_send_json_error();
+        if (!DFBF_API::is_valid_id($page) || !DFBF_API::is_valid_cursor($token)) wp_send_json_error();
 
         $o = self::normalize(array(
             'limit' => isset($_POST['limit']) ? absint($_POST['limit']) : 9,

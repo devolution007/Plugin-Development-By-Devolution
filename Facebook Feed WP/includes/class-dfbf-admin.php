@@ -1,8 +1,10 @@
 <?php
+declare(strict_types=1);
+
 if (!defined('ABSPATH')) exit;
 
-class DFBF_Admin {
-    public static function init() {
+final class DFBF_Admin {
+    public static function init(): void {
         add_action('admin_menu', array(__CLASS__, 'menu'));
         add_action('admin_init', array(__CLASS__, 'register'));
         add_action('admin_post_dfbf_clear_cache', array(__CLASS__, 'clear_cache'));
@@ -15,35 +17,44 @@ class DFBF_Admin {
         });
     }
 
-    private static function url(array $args = array()) {
+    private static function url(array $args = array()): string {
         return add_query_arg($args, admin_url('options-general.php?page=dfbf'));
     }
 
-    private static function guard() {
+    /** Stores a one-time error for the current admin and returns to the settings page. */
+    private static function fail(string $message): never {
+        set_transient('dfbf_notice_' . get_current_user_id(), $message, MINUTE_IN_SECONDS);
+        wp_safe_redirect(self::url(array('dfbf_failed' => 1)));
+        exit;
+    }
+
+    private static function guard(): void {
         if (!current_user_can('manage_options')) wp_die(esc_html__('Not allowed.', 'facebook-feed-wp'));
     }
 
-    public static function menu() {
+    public static function menu(): void {
         add_options_page(__('Facebook Feed', 'facebook-feed-wp'), __('Facebook Feed', 'facebook-feed-wp'), 'manage_options', 'dfbf', array(__CLASS__, 'page'));
     }
 
-    public static function register() {
+    public static function register(): void {
         register_setting('dfbf', 'dfbf_settings', array('sanitize_callback' => array(__CLASS__, 'sanitize')));
     }
 
-    public static function sanitize($in) {
+    public static function sanitize(mixed $in): array {
+        $in = is_array($in) ? $in : array();
         $old = DFBF_API::settings();
         DFBF_API::bump_cache();
-        $page = isset($in['page']) ? sanitize_text_field($in['page']) : $old['page'];
+        $page = isset($in['page']) ? sanitize_text_field((string) $in['page']) : $old['page'];
+        if (!DFBF_API::is_valid_id($page)) $page = '';
         return array(
-            'app_id' => isset($in['app_id']) ? preg_replace('/\D/', '', $in['app_id']) : $old['app_id'],
-            'app_secret' => isset($in['app_secret']) ? trim(sanitize_text_field($in['app_secret'])) : $old['app_secret'],
+            'app_id' => isset($in['app_id']) ? (string) preg_replace('/\D/', '', (string) $in['app_id']) : $old['app_id'],
+            'app_secret' => isset($in['app_secret']) ? trim(sanitize_text_field((string) $in['app_secret'])) : $old['app_secret'],
             'page' => $page,
             'cache_minutes' => max(1, min(1440, (int) ($in['cache_minutes'] ?? $old['cache_minutes']))),
         );
     }
 
-    public static function clear_cache() {
+    public static function clear_cache(): void {
         self::guard();
         check_admin_referer('dfbf_clear_cache');
         DFBF_API::bump_cache();
@@ -52,13 +63,12 @@ class DFBF_Admin {
     }
 
     /** Step 1: send the admin to Facebook's login dialog. */
-    public static function connect() {
+    public static function connect(): void {
         self::guard();
         check_admin_referer('dfbf_connect');
         $s = DFBF_API::settings();
         if ($s['app_id'] === '' || $s['app_secret'] === '') {
-            wp_safe_redirect(self::url(array('dfbf_error' => rawurlencode(__('Save your App ID and App Secret first.', 'facebook-feed-wp')))));
-            exit;
+            self::fail(__('Save your App ID and App Secret first.', 'facebook-feed-wp'));
         }
         // phpcs:ignore WordPress.Security.SafeRedirect.wp_redirect_wp_redirect -- Facebook login dialog.
         wp_redirect(DFBF_API::login_url(wp_create_nonce('dfbf_oauth')));
@@ -66,26 +76,22 @@ class DFBF_Admin {
     }
 
     /** Step 2: Facebook redirects back here with ?code=... */
-    public static function oauth_callback() {
+    public static function oauth_callback(): void {
         self::guard();
         $state = isset($_GET['state']) ? sanitize_text_field(wp_unslash($_GET['state'])) : '';
         if (!wp_verify_nonce($state, 'dfbf_oauth')) wp_die(esc_html__('Invalid or expired connection request. Please try again.', 'facebook-feed-wp'));
 
         if (isset($_GET['error']) || empty($_GET['code'])) {
             $msg = isset($_GET['error_description']) ? sanitize_text_field(wp_unslash($_GET['error_description'])) : __('Facebook login was cancelled.', 'facebook-feed-wp');
-            wp_safe_redirect(self::url(array('dfbf_error' => rawurlencode($msg))));
-            exit;
+            self::fail($msg);
         }
         $result = DFBF_API::connect(sanitize_text_field(wp_unslash($_GET['code'])));
-        if (is_wp_error($result)) {
-            wp_safe_redirect(self::url(array('dfbf_error' => rawurlencode($result->get_error_message()))));
-        } else {
-            wp_safe_redirect(self::url(array('connected' => 1)));
-        }
+        if (is_wp_error($result)) self::fail($result->get_error_message());
+        wp_safe_redirect(self::url(array('connected' => 1)));
         exit;
     }
 
-    public static function disconnect() {
+    public static function disconnect(): void {
         self::guard();
         check_admin_referer('dfbf_disconnect');
         DFBF_API::disconnect();
@@ -93,7 +99,7 @@ class DFBF_Admin {
         exit;
     }
 
-    public static function page() {
+    public static function page(): void {
         self::guard();
         $s = DFBF_API::settings();
         $conn = DFBF_API::connection();
@@ -110,8 +116,12 @@ class DFBF_Admin {
             <?php if (isset($_GET['disconnected'])) : ?>
                 <div class="notice notice-success is-dismissible"><p><?php esc_html_e('Disconnected from Facebook.', 'facebook-feed-wp'); ?></p></div>
             <?php endif; ?>
-            <?php if (!empty($_GET['dfbf_error'])) : ?>
-                <div class="notice notice-error"><p><?php echo esc_html(sanitize_text_field(wp_unslash($_GET['dfbf_error']))); ?></p></div>
+            <?php
+            $notice_key = 'dfbf_notice_' . get_current_user_id();
+            $notice = get_transient($notice_key);
+            if (is_string($notice) && $notice !== '') :
+                delete_transient($notice_key); ?>
+                <div class="notice notice-error"><p><?php echo esc_html($notice); ?></p></div>
             <?php endif; ?>
 
             <form method="post" action="options.php">

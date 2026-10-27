@@ -208,31 +208,34 @@ Displays a Facebook Page's posts on the front end with a shortcode.
 - Grid or list layout, 1–6 columns, responsive down to one column on phones.
 - Lightbox viewer (image plus full post text), or open posts on Facebook. Video posts always open on Facebook.
 - "Load more" pagination via AJAX.
-- Accepts a numeric Page ID, Page username, or facebook.com URL.
+- "Login with Facebook" connection: no tokens to copy. The plugin stores each managed Page's non-expiring token, including Pages managed through a Business Portfolio.
+- Accepts a connected Page's ID, name, or facebook.com URL.
 - Transient caching (default 60 minutes) to respect Graph API rate limits; one-click cache clear.
 - Posts with no text and no image are skipped; errors are shown to administrators only.
+- Hardened for PHP 8.3+: `strict_types`, typed signatures, strict validation of Page IDs, tokens, pagination cursors, image hosts (Facebook CDNs only) and post links (facebook.com only), no redirects, capped API response size, and tokens/app secret never leaked in error output.
 
 ### Files
 
 | File | Purpose |
 | --- | --- |
 | `facebook-feed-wp.php` | Main bootstrap: constants, class loading, default settings on activation. |
-| `includes/class-dfbf-api.php` | Facebook Graph API client with caching and Page resolution. |
-| `includes/class-dfbf-admin.php` | **Settings > Facebook Feed** page: Page access token, default Page, cache duration, usage guide. |
+| `includes/class-dfbf-api.php` | Facebook Graph API client: OAuth connection, Page token storage, caching, Page resolution. |
+| `includes/class-dfbf-admin.php` | **Settings > Facebook Feed** page: app credentials, Connect/Disconnect with Facebook, default Page, cache duration, usage guide. |
 | `includes/class-dfbf-shortcode.php` | Registers `[devo_facebook_feed]`, renders markup, handles the AJAX load-more endpoint. |
 | `assets/feed.css` | Card grid/list layout, lightbox, responsive rules. |
 | `assets/feed.js` | Lightbox viewer and load-more behavior. |
 | `readme.txt` | WordPress.org-style documentation and external-service disclosure. |
-| `uninstall.php` | Removes settings and cached transients. |
+| `uninstall.php` | Removes settings, the stored connection, and cached transients. |
 
 ### Setup
 
 1. Zip the `Facebook Feed WP` folder and upload it via **Plugins > Add New > Upload Plugin**, then activate.
-2. Create an app at [Meta for Developers](https://developers.facebook.com/apps/) and, in the Graph API Explorer, generate a long-lived **Page access token** (`pages_read_engagement`, `pages_show_list`) for a Page you manage.
-3. Go to **Settings > Facebook Feed**, paste the token, and set the default Page.
-4. Add the shortcode to any page or post.
+2. Create an app at [Meta for Developers](https://developers.facebook.com/apps/), add the **Facebook Login** product, and add the redirect URI shown on the plugin's settings page to **Valid OAuth Redirect URIs**.
+3. Go to **Settings > Facebook Feed**, enter the **App ID** and **App Secret**, and save.
+4. Click **Connect with Facebook**, log in with an account that manages the Page, and approve the Page(s) (permissions: `pages_show_list`, `pages_read_engagement`, `business_management`).
+5. Choose the default Page and add the shortcode to any page or post.
 
-> Reading a Page's posts requires a token for that Page (or Meta's "Page Public Content Access" feature after app review). The plugin cannot display arbitrary third-party Pages without that approval.
+> Reading a Page's posts requires a token for that Page (or Meta's "Page Public Content Access" feature after app review). While the app is in Development mode only people with a role on the app can connect. The plugin cannot display arbitrary third-party Pages without that approval.
 
 ### Shortcode
 
@@ -244,7 +247,7 @@ Displays a Facebook Page's posts on the front end with a shortcode.
 
 | Attribute | Values (default first) |
 | --- | --- |
-| `page` | Page ID, username, or URL; defaults to the setting |
+| `page` | ID, name, or URL of a connected Page; defaults to the setting |
 | `limit` | `9` (1–50 posts per page) |
 | `columns` | `3` (1–6) |
 | `layout` | `grid` or `list` |
@@ -254,7 +257,7 @@ Displays a Facebook Page's posts on the front end with a shortcode.
 
 ### External service
 
-Your server calls the Facebook Graph API (`graph.facebook.com`) with your Page access token to fetch post text, images, links, and dates. Visitors load images from Facebook's CDN. Independent project, not affiliated with or endorsed by Meta or Facebook.
+Your server calls the Facebook Graph API (`graph.facebook.com`) with the Page access token obtained through Facebook Login to fetch post text, images, links, and dates. Visitors load images from Facebook's CDN. Independent project, not affiliated with or endorsed by Meta or Facebook.
 
 ---
 
